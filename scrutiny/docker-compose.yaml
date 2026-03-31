@@ -1,0 +1,75 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.scrutiny-http.rule: Host(`scrutiny.pulosu.hexie.dev`)
+  traefik.http.routers.scrutiny-http.entrypoints: web
+  traefik.http.routers.scrutiny-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.scrutiny-https.rule: Host(`scrutiny.pulosu.hexie.dev`)
+  traefik.http.routers.scrutiny-https.entrypoints: websecure
+  traefik.http.routers.scrutiny-https.tls: true
+  traefik.http.routers.scrutiny-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.scrutiny-https.service: scrutiny
+  # Define internal port for the service
+  traefik.http.services.scrutiny.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  #homepage.widget.type: scrutiny
+  #homepage.widget.url: https://scrutiny.pulosu.hexie.dev
+
+services:
+  scrutiny:
+    container_name: ${APP_NAME}
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    restart: unless-stopped
+    user: "0:0"
+    cap_add:
+      - SYS_RAWIO
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080/api/health
+      timeout: 10s
+      interval: 1m30s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - type: bind
+        source: ./config
+        target: /opt/scrutiny/config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./influxdb
+        target: /opt/scrutiny/influxdb
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /run/udev
+        target: /run/udev
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /etc/smart_drivedb.h
+        target: /etc/smart_drivedb.h
+    networks:
+      - frontend
+    environment:
+      - COLLECTOR_CRON_SCHEDULE=0 23 * * *
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

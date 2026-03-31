@@ -1,0 +1,53 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.jellyseer-http.rule: Host(`jellyseer.pulosu.hexie.dev`)
+  traefik.http.routers.jellyseer-http.entrypoints: web
+  traefik.http.routers.jellyseer-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.jellyseer-https.rule: Host(`jellyseer.pulosu.hexie.dev`)
+  traefik.http.routers.jellyseer-https.entrypoints: websecure
+  traefik.http.routers.jellyseer-https.tls: true
+  traefik.http.routers.jellyseer-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.jellyseer-https.service: jellyseer
+  # Define internal port for the service
+  traefik.http.services.jellyseer.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.type: jellyseerr
+  homepage.widget.url: https://jellyseer.pulosu.hexie.dev
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+
+
+
+services:
+  jellyseer:
+    container_name: ${APP_NAME}
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    init: true
+    restart: unless-stopped
+    user: "0:0"
+    volumes:
+      - ./config:/app/config
+    networks:
+      - frontend
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

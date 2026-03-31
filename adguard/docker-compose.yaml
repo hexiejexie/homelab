@@ -1,0 +1,48 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.adguard-http.rule: Host(`adguard.pulosu.hexie.dev`)
+  traefik.http.routers.adguard-http.entrypoints: web
+  traefik.http.routers.adguard-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.adguard-https.rule: Host(`adguard.pulosu.hexie.dev`)
+  traefik.http.routers.adguard-https.entrypoints: websecure
+  traefik.http.routers.adguard-https.tls: true
+  traefik.http.routers.adguard-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.adguard-https.service: adguard
+  # Define internal port for the service
+  traefik.http.services.adguard.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  adguard:
+    container_name: ${APP_NAME}
+    image: adguard/adguardhome:latest
+    restart: unless-stopped
+    volumes:
+      - ./config:/opt/adguardhome/conf
+      - ./workdir:/opt/adguardhome/work
+    networks:
+      - frontend
+    ports:
+      - 53:53/udp
+      - 853:853/tcp
+      - 784:784/udp
+      - 3000:3000
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

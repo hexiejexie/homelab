@@ -1,0 +1,135 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.immich-http.rule: Host(`immich.pulosu.hexie.dev`)
+  traefik.http.routers.immich-http.entrypoints: web
+  traefik.http.routers.immich-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.immich-https.rule: Host(`immich.pulosu.hexie.dev`)
+  traefik.http.routers.immich-https.entrypoints: websecure
+  traefik.http.routers.immich-https.tls: true
+  traefik.http.routers.immich-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.immich-https.service: immich
+  # Define internal port for the service
+  traefik.http.services.immich.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  immich-server:
+    container_name: ${APP_NAME}
+    image: altran1502/immich-server:v2.4.1
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      - /18tb/immich/upload:/usr/src/app/upload
+      - /18tb/Backup:/archive
+      - /etc/localtime:/etc/localtime
+    networks:
+      - frontend
+      - backend
+    hostname: immich-server
+    labels:
+      <<: [*traefik-template, *homepage-template]
+    privileged: false
+    environment:
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USERNAME=${DB_USERNAME}
+    healthcheck: {}
+  immich-machine-learning:
+    command: []
+    container_name: immich-machine-learning
+    environment:
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USERNAME=${DB_USERNAME}
+    hostname: immich-machine-learning
+    healthcheck: {}
+    image: altran1502/immich-machine-learning:v2.4.1
+    restart: unless-stopped
+    volumes:
+      - /18tb/immich/model-cache:/cache
+    devices: []
+    cap_add: []
+    networks:
+      - backend
+    privileged: false
+  database:
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=vectors.so
+      - -c
+      - search_path="", public, vectors
+      - -c
+      - logging_collector=on
+      - -c
+      - max_wal_size=2GB
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - wal_compression=on
+    container_name: immich-postgres
+    environment:
+      - POSTGRES_DB=immich-db
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    hostname: immich-postgres
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready --dbname='immich-db' --username='${POSTGRES_USER}' || exit 1;
+          Chksum="$(psql --dbname='immich-db' --username='${POSTGRES_USER}' --tuples-only
+          --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM
+          pg_stat_database')"; echo "checksum failure count is "; [ "" = '0' ]
+          || exit 1
+      interval: 5m0s
+      start_period: 5m0s
+      start_interval: 30s
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    restart: unless-stopped
+    volumes:
+      - /18tb/immich/pgdata:/var/lib/postgresql/data
+    ports: []
+    devices: []
+    cap_add: []
+    networks:
+      - backend
+    privileged: false
+  redis:
+    container_name: immich-redis
+    hostname: immich-redis
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping || exit 1
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    volumes:
+      - /18tb/immich/redis:/data
+    ports: []
+    devices: []
+    cap_add: []
+    environment: []
+    networks:
+      - backend
+    privileged: false
+
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true

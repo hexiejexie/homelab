@@ -1,0 +1,58 @@
+name: ncdu
+services:
+  ncdu:
+    container_name: ncdu
+    environment:
+      - NCDU_PATH=/w
+    hostname: ncdu
+    image: bigbeartechworld/big-bear-ncdu:latest
+    labels:
+      # TRAEFIK
+      - "traefik.enable=true"
+
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.ncdu-http.rule=Host(`ncdu.pulosu.hexie.dev`)"
+      - "traefik.http.routers.ncdu-http.entrypoints=web"
+      - "traefik.http.routers.ncdu-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # HTTPS router
+      - "traefik.http.routers.ncdu-https.rule=Host(`ncdu.pulosu.hexie.dev`)"
+      - "traefik.http.routers.ncdu-https.entrypoints=websecure"
+      - "traefik.http.routers.ncdu-https.tls=true"
+      - "traefik.http.routers.ncdu-https.tls.certresolver=cloudflare"
+
+      # Match router to a named service
+      - "traefik.http.routers.ncdu-https.service=ncdu"
+
+      # Define the service (container’s internal port)
+      - "traefik.http.services.ncdu.loadbalancer.server.port=7681"
+
+
+      # HOMEPAGE
+      - homepage.group=Monitoring
+      - homepage.name=ncdu
+      - homepage.icon=si-dask
+      - homepage.href=https://ncdu.pulosu.hexie.dev
+      - homepage.description=disk usage
+      #- homepage.ping=https://ncdu.pulosu.hexie.dev
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /
+        target: /w
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+        bind:
+          create_host_path: true
+    networks:
+      - frontend
+networks:
+  frontend:
+    external: true
+

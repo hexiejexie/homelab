@@ -1,0 +1,45 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.profilarr-http.rule: Host(`profilarr.pulosu.hexie.dev`)
+  traefik.http.routers.profilarr-http.entrypoints: web
+  traefik.http.routers.profilarr-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.profilarr-https.rule: Host(`profilarr.pulosu.hexie.dev`)
+  traefik.http.routers.profilarr-https.entrypoints: websecure
+  traefik.http.routers.profilarr-https.tls: true
+  traefik.http.routers.profilarr-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.profilarr-https.service: profilarr
+  # Define internal port for the service
+  traefik.http.services.profilarr.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  profilarr:
+    container_name: ${APP_NAME}
+    image: santiagosayshey/profilarr:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000 
+      - PGID=1000
+    volumes:
+      - ./config:/config
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

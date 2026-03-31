@@ -1,0 +1,56 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.crafty-http.rule: Host(`crafty.pulosu.hexie.dev`)
+  traefik.http.routers.crafty-http.entrypoints: web
+  traefik.http.routers.crafty-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.crafty-https.rule: Host(`crafty.pulosu.hexie.dev`)
+  #traefik.http.routers.crafty-https.entrypoints: websecure
+  traefik.http.routers.crafty-https.tls: true
+  traefik.http.routers.crafty-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.crafty-https.service: crafty
+  # Define internal port for the service
+  traefik.http.services.crafty.loadbalancer.server.scheme: https
+  traefik.http.services.crafty.loadbalancer.server.port: ${APP_PORT}
+  
+  traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: https
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  crafty:
+    container_name: ${APP_NAME}
+    hostname: crafty-container
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Etc/UTC
+      - USE_HTTPS=false
+    ports:
+      - 8443:8443
+      - 25565-25568:25565-25568
+    volumes:
+      - ./backups:/crafty/backups
+      - ./logs:/crafty/logs
+      - ./servers:/crafty/servers
+      - ./config:/crafty/app/config
+      - ./import:/crafty/import
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

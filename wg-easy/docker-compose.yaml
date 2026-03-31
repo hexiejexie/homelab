@@ -1,0 +1,53 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.wireguard-http.rule: Host(`wireguard.pulosu.hexie.dev`)
+  traefik.http.routers.wireguard-http.entrypoints: web
+  traefik.http.routers.wireguard-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.wireguard-https.rule: Host(`wireguard.pulosu.hexie.dev`)
+  traefik.http.routers.wireguard-https.entrypoints: websecure
+  traefik.http.routers.wireguard-https.tls: true
+  traefik.http.routers.wireguard-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.wireguard-https.service: wireguard
+  # Define internal port for the service
+  traefik.http.services.wireguard.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://wireguard.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  wireguard:
+    container_name: ${APP_NAME}
+    image: ghcr.io/wg-easy/wg-easy:15
+    restart: unless-stopped
+    volumes:
+      - ./config:/etc/wireguard
+      - /lib/modules:/lib/modules:ro
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+
+    ports:
+      - "51820:51820/udp"
+    environment:
+        DISABLE_IPV6: true
+networks:
+  frontend:
+    external: true

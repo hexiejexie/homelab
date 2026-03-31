@@ -1,0 +1,48 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.metubedl-http.rule: Host(`metubedl.pulosu.hexie.dev`)
+  traefik.http.routers.metubedl-http.entrypoints: web
+  traefik.http.routers.metubedl-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.metubedl-https.rule: Host(`metubedl.pulosu.hexie.dev`)
+  traefik.http.routers.metubedl-https.entrypoints: websecure
+  traefik.http.routers.metubedl-https.tls: true
+  traefik.http.routers.metubedl-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.metubedl-https.service: metubedl
+  # Define internal port for the service
+  traefik.http.services.metubedl.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  metubedl:
+    container_name: ${APP_NAME}
+    image: alexta69/metube:latest
+    restart: unless-stopped
+    environment:
+      - DEFAULT_THEME=dark
+      - DELETE_FILE_ON_TRASHCAN=true
+      - GID=1000
+      - UID=1000
+      - URL_PREFIX=/metube
+    volumes:
+      - ./downloads:/downloads
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

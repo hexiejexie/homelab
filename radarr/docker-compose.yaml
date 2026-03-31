@@ -1,0 +1,50 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.radarr-http.rule: Host(`radarr.pulosu.hexie.dev`)
+  traefik.http.routers.radarr-http.entrypoints: web
+  traefik.http.routers.radarr-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.radarr-https.rule: Host(`radarr.pulosu.hexie.dev`)
+  traefik.http.routers.radarr-https.entrypoints: websecure
+  traefik.http.routers.radarr-https.tls: true
+  traefik.http.routers.radarr-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.radarr-https.service: radarr
+  # Define internal port for the service
+  traefik.http.services.radarr.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.type: radarr 
+  homepage.widget.url: https://radarr.pulosu.hexie.dev
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+  #homepage.widget.enableQueue: true  
+
+
+
+services:
+  radarr:
+    container_name: ${APP_NAME}
+    image: ghcr.io/hotio/radarr:latest
+    restart: unless-stopped
+    environment:
+      - PUID=0
+      - PGID=0
+    volumes:
+      - ./config:/config
+      - /18tb/media:/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

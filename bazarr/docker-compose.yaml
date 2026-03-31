@@ -1,0 +1,48 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.bazarr-http.rule: Host(`bazarr.pulosu.hexie.dev`)
+  traefik.http.routers.bazarr-http.entrypoints: web
+  traefik.http.routers.bazarr-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.bazarr-https.rule: Host(`bazarr.pulosu.hexie.dev`)
+  traefik.http.routers.bazarr-https.entrypoints: websecure
+  traefik.http.routers.bazarr-https.tls: true
+  traefik.http.routers.bazarr-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.bazarr-https.service: bazarr
+  # Define internal port for the service
+  traefik.http.services.bazarr.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.type: bazarr
+  homepage.widget.url: https://bazarr.pulosu.hexie.dev
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+
+services:
+  bazarr:
+    container_name: ${APP_NAME}
+    image: lscr.io/linuxserver/bazarr:latest
+    restart: unless-stopped
+    user: "0:0"
+    environment:
+      - PUID=0
+      - PGID=0
+    volumes:
+      - ./config:/config
+      - /18tb/media:/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

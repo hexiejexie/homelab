@@ -1,0 +1,58 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.jellyfin-http.rule: Host(`jellyfin.hexie.dev`) || Host(`jellyfin.pulosu.hexie.dev`)
+  traefik.http.routers.jellyfin-http.entrypoints: web
+  traefik.http.routers.jellyfin-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.jellyfin-https.rule: Host(`jellyfin.hexie.dev`) || Host(`jellyfin.pulosu.hexie.dev`)
+  traefik.http.routers.jellyfin-https.entrypoints: websecure
+  traefik.http.routers.jellyfin-https.tls: true
+  traefik.http.routers.jellyfin-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.jellyfin-https.service: jellyfin
+  # Define internal port for the service
+  traefik.http.services.jellyfin.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.type: jellyfin
+  homepage.widget.url: https://jellyfin.pulosu.hexie.dev
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+  homepage.widget.enableBlocks: true
+  homepage.widget.enableNowPlaying: true
+  homepage.widget.enableUser: true
+  homepage.widget.enableMediaControl: false 
+  homepage.widget.showEpisodeNumber: true
+  homepage.widget.expandOneStreamToTwoRows: false 
+
+  
+services:
+  jellyfin:
+    container_name: ${APP_NAME}
+    image: jellyfin/jellyfin:latest
+    restart: unless-stopped
+    user: "0:0"
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - /18tb/media:/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+    #devices:
+    #  - /dev/dri/renderD128:/dev/dri/renderD128
+    group_add:
+      - '44'
+      - '992'
+
+networks:
+  frontend:
+    external: true

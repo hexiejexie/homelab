@@ -1,0 +1,46 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.grafana-http.rule: Host(`grafana.pulosu.hexie.dev`)
+  traefik.http.routers.grafana-http.entrypoints: web
+  traefik.http.routers.grafana-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.grafana-https.rule: Host(`grafana.pulosu.hexie.dev`)
+  traefik.http.routers.grafana-https.entrypoints: websecure
+  traefik.http.routers.grafana-https.tls: true
+  traefik.http.routers.grafana-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.grafana-https.service: ${APP_NAME}
+  # Define internal port for the service
+  traefik.http.services.grafana.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  grafana:
+    container_name: ${APP_NAME}
+    image: grafana/grafana-enterprise
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.pulosu.hexie.dev/
+      - GF_PLUGINS_PREINSTALL=grafana-clock-panel
+    user: "0:0"
+    volumes:
+      - ./grafana_storage:/var/lib/grafana
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

@@ -1,0 +1,58 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.7daystodie-http.rule: Host(`7daystodie.pulosu.hexie.dev`)
+  traefik.http.routers.7daystodie-http.entrypoints: web
+  traefik.http.routers.7daystodie-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.7daystodie-https.rule: Host(`7daystodie.pulosu.hexie.dev`)
+  traefik.http.routers.7daystodie-https.entrypoints: websecure
+  traefik.http.routers.7daystodie-https.tls: true
+  traefik.http.routers.7daystodie-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.7daystodie-https.service: 7daystodie
+  # Define internal port for the service
+  traefik.http.services.7daystodie.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  7daystodie:
+    container_name: ${APP_NAME}
+    image: vinanrra/7dtd-server:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=stable   
+      - TimeZone=Europe/Amsterdam
+      - START_MODE=1
+    volumes:
+      - ./config:/home/sdtdserver/serverfiles/
+      - ./log:/home/sdtdserver/log/
+      - ./lgsm-config:/home/sdtdserver/lgsm/config-lgsm/sdtdserver/
+      - /18tb/7daystodie/backup:/home/sdtdserver/lgsm/backup/
+      - ./saves:/home/sdtdserver/.local/share/7DaysToDie/
+    networks:
+      - frontend
+    ports:
+      - 26900:26900/tcp # Default game ports
+      - 26900:26900/udp # Default game ports
+      - 26901:26901/udp # Default game ports
+      - 26902:26902/udp # Default game ports
+      - 8081:8081
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

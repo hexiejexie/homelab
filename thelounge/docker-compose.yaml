@@ -1,0 +1,45 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.thelounge-http.rule: Host(`thelounge.pulosu.hexie.dev`)
+  traefik.http.routers.thelounge-http.entrypoints: web
+  traefik.http.routers.thelounge-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.thelounge-https.rule: Host(`thelounge.pulosu.hexie.dev`)
+  traefik.http.routers.thelounge-https.entrypoints: websecure
+  traefik.http.routers.thelounge-https.tls: true
+  traefik.http.routers.thelounge-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.thelounge-https.service: thelounge
+  # Define internal port for the service
+  traefik.http.services.thelounge.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  thelounge:
+    container_name: ${APP_NAME}
+    image: lscr.io/linuxserver/thelounge:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000 
+      - PGID=1000
+    volumes:
+      - ./config:/config
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

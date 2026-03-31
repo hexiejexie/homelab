@@ -1,0 +1,50 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.sonarr-http.rule: Host(`sonarr.pulosu.hexie.dev`)
+  traefik.http.routers.sonarr-http.entrypoints: web
+  traefik.http.routers.sonarr-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.sonarr-https.rule: Host(`sonarr.pulosu.hexie.dev`)
+  traefik.http.routers.sonarr-https.entrypoints: websecure
+  traefik.http.routers.sonarr-https.tls: true
+  traefik.http.routers.sonarr-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.sonarr-https.service: sonarr
+  # Define internal port for the service
+  traefik.http.services.sonarr.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.type: sonarr 
+  homepage.widget.url: https://sonarr.pulosu.hexie.dev
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+  #homepage.widget.enableQueue: true  
+
+
+
+services:
+  sonarr:
+    container_name: ${APP_NAME}
+    image: ghcr.io/hotio/sonarr:latest
+    restart: unless-stopped
+    environment:
+      - PUID=0
+      - PGID=0
+    volumes:
+      - ./config:/config
+      - /18tb/media:/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

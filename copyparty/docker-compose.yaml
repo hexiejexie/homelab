@@ -1,0 +1,60 @@
+services:
+  copyparty:
+    image: copyparty/ac:latest
+    container_name: copyparty
+    restart: unless-stopped
+    user: "0:0"
+    volumes:
+      - /apps/copyparty:/cfg:z
+      - /18tb/Backup:/18tb:z
+      - /apps:/apps:z
+    environment:
+      LD_PRELOAD: /usr/lib/libmimalloc-secure.so.2
+      # enable mimalloc by replacing "NOPE" with "2" for a nice speed-boost (will use twice as much ram)
+
+      PYTHONUNBUFFERED: 1
+      # ensures log-messages are not delayed (but can reduce speed a tiny bit)
+
+    stop_grace_period: 15s  # thumbnailer is allowed to continue finishing up for 10s after the shutdown signal
+    healthcheck:
+      # hide it from logs with "/._" so it matches the default --lf-url filter 
+      test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:3923/?reset=/._"]
+      interval: 1m
+      timeout: 2s
+      retries: 5
+      start_period: 15s
+    networks:
+      - frontend
+    labels:
+      # TRAEFIK
+      - "traefik.enable=true"
+
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.copyparty-http.rule=Host(`copyparty.pulosu.hexie.dev`)"
+      - "traefik.http.routers.copyparty-http.entrypoints=web"
+      - "traefik.http.routers.copyparty-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # HTTPS router
+      - "traefik.http.routers.copyparty-https.rule=Host(`copyparty.pulosu.hexie.dev`)"
+      - "traefik.http.routers.copyparty-https.entrypoints=websecure"
+      - "traefik.http.routers.copyparty-https.tls=true"
+      - "traefik.http.routers.copyparty-https.tls.certresolver=cloudflare"
+
+      # Match router to a named service
+      - "traefik.http.routers.copyparty-https.service=copyparty"
+
+      # Define the service (container’s internal port)
+      - "traefik.http.services.copyparty.loadbalancer.server.port=3923"
+
+      # HOMEPAGE
+      - homepage.group=Management
+      - homepage.name=Copyparty
+      - homepage.icon=si-thestorygraph
+      - homepage.href=https://copyparty.pulosu.hexie.dev
+      - homepage.description=file browser
+      #- homepage.ping=https://copyparty.pulosu.hexie.dev
+
+networks:
+  frontend:
+    external: true

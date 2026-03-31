@@ -1,0 +1,43 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  # HTTP → HTTPS redirect
+  traefik.http.routers.prometheus-http.rule: Host(`prometheus.pulosu.hexie.dev`)
+  traefik.http.routers.prometheus-http.entrypoints: web
+  traefik.http.routers.prometheus-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  # HTTPS router
+  traefik.http.routers.prometheus-https.rule: Host(`prometheus.pulosu.hexie.dev`)
+  traefik.http.routers.prometheus-https.entrypoints: websecure
+  traefik.http.routers.prometheus-https.tls: true
+  traefik.http.routers.prometheus-https.tls.certresolver: cloudflare
+  # Match router to a named service
+  traefik.http.routers.prometheus-https.service: prometheus
+  # Define internal port for the service
+  traefik.http.services.prometheus.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+
+
+services:
+  prometheus:
+    container_name: ${APP_NAME}
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    user: "0:0"
+    volumes:
+      - ./data:/prometheus
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true

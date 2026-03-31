@@ -1,0 +1,45 @@
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:lts
+    restart: unless-stopped
+    networks:
+      - frontend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /apps/portainer/data:/data
+    labels:
+      # TRAEFIK
+      - "traefik.enable=true"
+
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.portainer-http.rule=Host(`portainer.pulosu.hexie.dev`)"
+      - "traefik.http.routers.portainer-http.entrypoints=web"
+      - "traefik.http.routers.portainer-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # HTTPS router
+      - "traefik.http.routers.portainer-https.rule=Host(`portainer.pulosu.hexie.dev`)"
+      - "traefik.http.routers.portainer-https.entrypoints=websecure"
+      - "traefik.http.routers.portainer-https.tls=true"
+      - "traefik.http.routers.portainer-https.tls.certresolver=cloudflare"
+
+      # Match router to a named service
+      - "traefik.http.routers.portainer-https.service=portainer"
+
+      # Define the service (container’s internal port)
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+
+      # HOMEPAGE
+      - homepage.group=Management
+      - homepage.name=Portainer
+      - homepage.icon=si-portainer
+      - homepage.href=https://portainer.pulosu.hexie.dev
+      - homepage.description=docker manager
+      #- homepage.ping=https://portainer.pulosu.hexie.dev
+
+
+networks:
+  frontend:
+    external: true
