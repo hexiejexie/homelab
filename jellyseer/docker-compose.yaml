@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.jellyseer-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.jellyseer-http.entrypoints: web
   traefik.http.routers.jellyseer-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.jellyseer-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.jellyseer-https.entrypoints: websecure
   traefik.http.routers.jellyseer-https.tls: true
   traefik.http.routers.jellyseer-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.jellyseer-https.service: jellyseer
-  # Define internal port for the service
+  traefik.http.routers.jellyseer-https.service: ${APP_NAME}
   traefik.http.services.jellyseer.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -21,30 +17,27 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.type: jellyseerr
-  homepage.widget.url: https://jellyseer.pulosu.hexie.dev
+  homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
-
-
 
 services:
   jellyseer:
     container_name: ${APP_NAME}
-    image: ghcr.io/fallenbagel/jellyseerr:latest
-    init: true
+    image: ghcr.io/seerr-team/seerr:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    init: true
     user: "0:0"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
     volumes:
       - ./config:/app/config
     networks:
       - frontend
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
-      start_period: 20s
-      timeout: 3s
-      interval: 15s
-      retries: 3
     labels:
       <<: [*traefik-template, *homepage-template]
 
