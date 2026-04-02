@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.7daystodie-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.7daystodie-http.entrypoints: web
   traefik.http.routers.7daystodie-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.7daystodie-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.7daystodie-https.entrypoints: websecure
   traefik.http.routers.7daystodie-https.tls: true
   traefik.http.routers.7daystodie-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.7daystodie-https.service: 7daystodie
-  # Define internal port for the service
+  traefik.http.routers.7daystodie-https.service: ${APP_NAME}
   traefik.http.services.7daystodie.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -21,14 +17,13 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
 
 
 
 services:
   7daystodie:
     container_name: ${APP_NAME}
-    image: vinanrra/7dtd-server:latest
+    image: vinanrra/7dtd-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       - PUID=1000
