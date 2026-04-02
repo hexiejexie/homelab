@@ -24,13 +24,44 @@ services:
     image: prom/prometheus:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=90d
+      - --web.enable-lifecycle
     volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./data:/prometheus
     networks:
       - frontend
+      - backend
     labels:
       <<: [*traefik-template, *homepage-template]
 
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-v0.51.0}
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - backend
+  adguard-exporter:
+    container_name: adguard-exporter
+    image: ghcr.io/henrywhitaker3/adguard-exporter:${ADGUARD_EXPORTER_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      ADGUARD_SERVERS: http://adguard:80
+      ADGUARD_USERNAMES: ${ADGUARD_USER}
+      ADGUARD_PASSWORDS: ${ADGUARD_PASS}
+    networks:
+      - backend
 networks:
   frontend:
+    external: true
+  backend:
     external: true

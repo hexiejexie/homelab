@@ -32,9 +32,12 @@ services:
       - 784:784/udp
     networks:
       - frontend
+      - backend
     labels:
       <<: [*traefik-template, *homepage-template]
 
 networks:
   frontend:
+    external: true
+  backend:
     external: true

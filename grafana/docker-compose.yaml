@@ -29,11 +29,16 @@ services:
       GF_PLUGINS_PREINSTALL: grafana-clock-panel
     volumes:
       - ./grafana_storage:/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
     networks:
       - frontend
+      - backend
     labels:
       <<: [*traefik-template, *homepage-template]
 
 networks:
   frontend:
+    external: true
+  backend:
     external: true
