@@ -1,44 +1,35 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.portainer-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.portainer-http.entrypoints: web
+  traefik.http.routers.portainer-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.portainer-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.portainer-https.entrypoints: websecure
+  traefik.http.routers.portainer-https.tls: true
+  traefik.http.routers.portainer-https.tls.certresolver: cloudflare
+  traefik.http.routers.portainer-https.service: ${APP_NAME}
+  traefik.http.services.portainer.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
 services:
   portainer:
-    container_name: portainer
-    image: portainer/portainer-ce:lts
+    container_name: ${APP_NAME}
+    image: portainer/portainer-ce:${IMAGE_TAG:-lts}
     restart: unless-stopped
-    networks:
-      - frontend
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /apps/portainer/data:/data
+      - ./data:/data
+    networks:
+      - frontend
     labels:
-      # TRAEFIK
-      - "traefik.enable=true"
-
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.portainer-http.rule=Host(`portainer.pulosu.hexie.dev`)"
-      - "traefik.http.routers.portainer-http.entrypoints=web"
-      - "traefik.http.routers.portainer-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      # HTTPS router
-      - "traefik.http.routers.portainer-https.rule=Host(`portainer.pulosu.hexie.dev`)"
-      - "traefik.http.routers.portainer-https.entrypoints=websecure"
-      - "traefik.http.routers.portainer-https.tls=true"
-      - "traefik.http.routers.portainer-https.tls.certresolver=cloudflare"
-
-      # Match router to a named service
-      - "traefik.http.routers.portainer-https.service=portainer"
-
-      # Define the service (container’s internal port)
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-
-
-      # HOMEPAGE
-      - homepage.group=Management
-      - homepage.name=Portainer
-      - homepage.icon=si-portainer
-      - homepage.href=https://portainer.pulosu.hexie.dev
-      - homepage.description=docker manager
-      #- homepage.ping=https://portainer.pulosu.hexie.dev
-
+      <<: [*traefik-template, *homepage-template]
 
 networks:
   frontend:

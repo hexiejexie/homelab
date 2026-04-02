@@ -1,58 +1,39 @@
-name: ncdu
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.ncdu-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.ncdu-http.entrypoints: web
+  traefik.http.routers.ncdu-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.ncdu-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.ncdu-https.entrypoints: websecure
+  traefik.http.routers.ncdu-https.tls: true
+  traefik.http.routers.ncdu-https.tls.certresolver: cloudflare
+  traefik.http.routers.ncdu-https.service: ${APP_NAME}
+  traefik.http.services.ncdu.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
 services:
   ncdu:
-    container_name: ncdu
-    environment:
-      - NCDU_PATH=/w
-    hostname: ncdu
-    image: bigbeartechworld/big-bear-ncdu:latest
-    labels:
-      # TRAEFIK
-      - "traefik.enable=true"
-
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.ncdu-http.rule=Host(`ncdu.pulosu.hexie.dev`)"
-      - "traefik.http.routers.ncdu-http.entrypoints=web"
-      - "traefik.http.routers.ncdu-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      # HTTPS router
-      - "traefik.http.routers.ncdu-https.rule=Host(`ncdu.pulosu.hexie.dev`)"
-      - "traefik.http.routers.ncdu-https.entrypoints=websecure"
-      - "traefik.http.routers.ncdu-https.tls=true"
-      - "traefik.http.routers.ncdu-https.tls.certresolver=cloudflare"
-
-      # Match router to a named service
-      - "traefik.http.routers.ncdu-https.service=ncdu"
-
-      # Define the service (container’s internal port)
-      - "traefik.http.services.ncdu.loadbalancer.server.port=7681"
-
-
-      # HOMEPAGE
-      - homepage.group=Monitoring
-      - homepage.name=ncdu
-      - homepage.icon=si-dask
-      - homepage.href=https://ncdu.pulosu.hexie.dev
-      - homepage.description=disk usage
-      #- homepage.ping=https://ncdu.pulosu.hexie.dev
-    privileged: true
+    container_name: ${APP_NAME}
+    image: bigbeartechworld/big-bear-ncdu:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    privileged: true
+    environment:
+      NCDU_PATH: /w
     volumes:
-      - type: bind
-        source: /
-        target: /w
-        bind:
-          create_host_path: true
-      - type: bind
-        source: /etc/localtime
-        target: /etc/localtime
-        read_only: true
-        bind:
-          create_host_path: true
+      - /:/w:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
 networks:
   frontend:
     external: true
-

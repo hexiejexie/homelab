@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.metubedl-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.metubedl-http.entrypoints: web
   traefik.http.routers.metubedl-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.metubedl-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.metubedl-https.entrypoints: websecure
   traefik.http.routers.metubedl-https.tls: true
   traefik.http.routers.metubedl-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.metubedl-https.service: metubedl
-  # Define internal port for the service
+  traefik.http.routers.metubedl-https.service: ${APP_NAME}
   traefik.http.services.metubedl.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -21,14 +17,13 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
 
 
 
 services:
   metubedl:
     container_name: ${APP_NAME}
-    image: alexta69/metube:latest
+    image: alexta69/metube:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       - DEFAULT_THEME=dark

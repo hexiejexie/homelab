@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.mealie-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.mealie-http.entrypoints: web
   traefik.http.routers.mealie-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.mealie-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.mealie-https.entrypoints: websecure
   traefik.http.routers.mealie-https.tls: true
   traefik.http.routers.mealie-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.mealie-https.service: mealie
-  # Define internal port for the service
+  traefik.http.routers.mealie-https.service: ${APP_NAME}
   traefik.http.services.mealie.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -21,20 +17,14 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
-
-
 
 services:
   mealie:
     container_name: ${APP_NAME}
-    image: hkotel/mealie:latest
+    image: hkotel/mealie:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    user: "0:0"
     environment:
-      - ALLOW_SIGNUP=true
-      - PGID=1000
-      - PUID=1000
+      ALLOW_SIGNUP: "true"
     volumes:
       - ./data:/app/data
     networks:
