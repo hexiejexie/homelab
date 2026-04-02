@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.qbittorrent-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-http.entrypoints: web
   traefik.http.routers.qbittorrent-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.qbittorrent-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-https.entrypoints: websecure
   traefik.http.routers.qbittorrent-https.tls: true
   traefik.http.routers.qbittorrent-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.qbittorrent-https.service: qbittorrent
-  # Define internal port for the service
+  traefik.http.routers.qbittorrent-https.service: ${APP_NAME}
   traefik.http.services.qbittorrent.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -21,30 +17,26 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
-  homepage.widget.type: qbittorrent 
-  homepage.widget.url: https://qbittorrent.pulosu.hexie.dev
-  homepage.widget.key: 528e20cf94734d94b994c825c497db7d
+  homepage.widget.type: qbittorrent
+  homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.username: ${HOMEPAGE_WIDGET_USERNAME}
   homepage.widget.password: ${HOMEPAGE_WIDGET_PASSWORD}
-
 
 services:
   qbittorrent:
     container_name: ${APP_NAME}
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=0
-      - PGID=0
-    
-    volumes:
-      - ./qbittorrent:/config
-      - /18tb/media:/data:rw
-    networks:
-      - frontend
+      PUID: "0"
+      PGID: "0"
     ports:
       - 63531:63531
+    volumes:
+      - ./qbittorrent:/config
+      - /18tb/media:/data
+    networks:
+      - frontend
     labels:
       <<: [*traefik-template, *homepage-template]
 
