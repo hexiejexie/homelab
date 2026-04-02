@@ -1,19 +1,15 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
-  traefik.http.routers.PLACEHOLDER-http.rule: Host(`PLACEHOLDER.pulosu.hexie.dev`)
-  traefik.http.routers.PLACEHOLDER-http.entrypoints: web
-  traefik.http.routers.PLACEHOLDER-http.middlewares: redirect-to-https
+  traefik.http.routers.${APP_NAME}-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.${APP_NAME}-http.entrypoints: web
+  traefik.http.routers.${APP_NAME}-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
-  traefik.http.routers.PLACEHOLDER-https.rule: Host(`PLACEHOLDER.pulosu.hexie.dev`)
-  traefik.http.routers.PLACEHOLDER-https.entrypoints: websecure
-  traefik.http.routers.PLACEHOLDER-https.tls: true
-  traefik.http.routers.PLACEHOLDER-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.PLACEHOLDER-https.service: PLACEHOLDER
-  # Define internal port for the service
-  traefik.http.services.PLACEHOLDER.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.${APP_NAME}-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.${APP_NAME}-https.entrypoints: websecure
+  traefik.http.routers.${APP_NAME}-https.tls: true
+  traefik.http.routers.${APP_NAME}-https.tls.certresolver: cloudflare
+  traefik.http.routers.${APP_NAME}-https.service: ${APP_NAME}
+  traefik.http.services.${APP_NAME}.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
