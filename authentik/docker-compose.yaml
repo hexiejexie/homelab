@@ -8,7 +8,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.authentik-https.entrypoints: websecure
   traefik.http.routers.authentik-https.tls: true
   traefik.http.routers.authentik-https.tls.certresolver: cloudflare
-  traefik.http.routers.authentik-https.service: authentik
+  traefik.http.routers.authentik-https.service: ${APP_NAME}
   traefik.http.services.authentik.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -27,7 +27,7 @@ x-authentik-env: &authentik-env
   AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
 
 x-authentik-common: &authentik-common
-  image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.8.4}
+  image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2}
   restart: unless-stopped
   env_file: .env
   environment:

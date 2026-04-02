@@ -1,15 +1,15 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.${APP_NAME}-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.${APP_NAME}-http.entrypoints: web
-  traefik.http.routers.${APP_NAME}-http.middlewares: redirect-to-https
+  traefik.http.routers.grafana-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.grafana-http.entrypoints: web
+  traefik.http.routers.grafana-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  traefik.http.routers.${APP_NAME}-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.${APP_NAME}-https.entrypoints: websecure
-  traefik.http.routers.${APP_NAME}-https.tls: true
-  traefik.http.routers.${APP_NAME}-https.tls.certresolver: cloudflare
-  traefik.http.routers.${APP_NAME}-https.service: ${APP_NAME}
-  traefik.http.services.${APP_NAME}.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.grafana-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.grafana-https.entrypoints: websecure
+  traefik.http.routers.grafana-https.tls: true
+  traefik.http.routers.grafana-https.tls.certresolver: cloudflare
+  traefik.http.routers.grafana-https.service: ${APP_NAME}
+  traefik.http.services.grafana.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}

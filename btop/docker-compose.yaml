@@ -1,73 +1,41 @@
-# Configuration for btop setup
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.btop-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.btop-http.entrypoints: web
+  traefik.http.routers.btop-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.btop-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.btop-https.entrypoints: websecure
+  traefik.http.routers.btop-https.tls: true
+  traefik.http.routers.btop-https.tls.certresolver: cloudflare
+  traefik.http.routers.btop-https.service: ${APP_NAME}
+  traefik.http.services.btop.loadbalancer.server.port: ${APP_PORT}
 
-# Name of the big-bear-btop application
-name: btop
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
 
-# Service definitions for the big-bear-btop application
 services:
-  # Service name: big-bear-btop
-  # The `big-bear-btop` service definition
   btop:
-    # Name of the container
-    container_name: btop
-
-    # Image to be used for the container specifies the btop version and source
-    image: bigbeartechworld/big-bear-btop:latest
-
-    # Container restart policy - restarts the container unless manually stopped
+    container_name: ${APP_NAME}
+    image: bigbeartechworld/big-bear-btop:${IMAGE_TAG:-latest}
     restart: unless-stopped
-
-    # Run the container in privileged mode to allow access to system metrics
     privileged: true
-
-    # Environment variables for authentication
-
-    # Mount necessary volumes for accessing system information
+    cpuset: "5"
     volumes:
-      # Mount the host's /proc directory to the container's /proc directory
       - /proc:/proc
-      # Mount the host's /sys directory to the container's /sys directory
       - /sys:/sys
-      # Mount the host's /dev directory to the container's /dev directory
       - /dev:/dev
-      # Mount the host's /etc/localtime file to the container's /etc/localtime file (read-only)
       - /etc/localtime:/etc/localtime:ro
-      # Mount a local directory for persisting btop configuration files
       - ./config:/root/.config/btop
-
-
     networks:
       - frontend
-    cpuset: "5"
     labels:
-      # TRAEFIK
-      - "traefik.enable=true"
+      <<: [*traefik-template, *homepage-template]
 
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.btop-http.rule=Host(`btop.pulosu.hexie.dev`)"
-      - "traefik.http.routers.btop-http.entrypoints=web"
-      - "traefik.http.routers.btop-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      # HTTPS router
-      - "traefik.http.routers.btop-https.rule=Host(`btop.pulosu.hexie.dev`)"
-      - "traefik.http.routers.btop-https.entrypoints=websecure"
-      - "traefik.http.routers.btop-https.tls=true"
-      - "traefik.http.routers.btop-https.tls.certresolver=cloudflare"
-
-      # Match router to a named service
-      - "traefik.http.routers.btop-https.service=btop"
-
-      # Define the service (container’s internal port)
-      - "traefik.http.services.btop.loadbalancer.server.port=7681"
-
-      # HOMEPAGE
-      - homepage.group=Monitoring
-      - homepage.name=btop
-      - homepage.icon=si-htop
-      - homepage.description=process viewer
-      - homepage.href=https://btop.pulosu.hexie.dev
-      #- homepage.ping=https://btop.pulosu.hexie.dev
 networks:
   frontend:
     external: true

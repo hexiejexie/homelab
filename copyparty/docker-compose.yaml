@@ -1,59 +1,47 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.copyparty-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.copyparty-http.entrypoints: web
+  traefik.http.routers.copyparty-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.copyparty-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.copyparty-https.entrypoints: websecure
+  traefik.http.routers.copyparty-https.tls: true
+  traefik.http.routers.copyparty-https.tls.certresolver: cloudflare
+  traefik.http.routers.copyparty-https.service: ${APP_NAME}
+  traefik.http.services.copyparty.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
 services:
   copyparty:
-    image: copyparty/ac:latest
-    container_name: copyparty
+    container_name: ${APP_NAME}
+    image: copyparty/ac:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
-    volumes:
-      - /apps/copyparty:/cfg:z
-      - /18tb/Backup:/18tb:z
-      - /apps:/apps:z
     environment:
       LD_PRELOAD: /usr/lib/libmimalloc-secure.so.2
-      # enable mimalloc by replacing "NOPE" with "2" for a nice speed-boost (will use twice as much ram)
-
       PYTHONUNBUFFERED: 1
-      # ensures log-messages are not delayed (but can reduce speed a tiny bit)
-
-    stop_grace_period: 15s  # thumbnailer is allowed to continue finishing up for 10s after the shutdown signal
+    stop_grace_period: 15s
     healthcheck:
-      # hide it from logs with "/._" so it matches the default --lf-url filter 
       test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:3923/?reset=/._"]
       interval: 1m
       timeout: 2s
       retries: 5
       start_period: 15s
+    volumes:
+      - /apps/copyparty:/cfg:z
+      - /18tb/Backup:/18tb:z
+      - /apps:/apps:z
     networks:
       - frontend
     labels:
-      # TRAEFIK
-      - "traefik.enable=true"
-
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.copyparty-http.rule=Host(`copyparty.pulosu.hexie.dev`)"
-      - "traefik.http.routers.copyparty-http.entrypoints=web"
-      - "traefik.http.routers.copyparty-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      # HTTPS router
-      - "traefik.http.routers.copyparty-https.rule=Host(`copyparty.pulosu.hexie.dev`)"
-      - "traefik.http.routers.copyparty-https.entrypoints=websecure"
-      - "traefik.http.routers.copyparty-https.tls=true"
-      - "traefik.http.routers.copyparty-https.tls.certresolver=cloudflare"
-
-      # Match router to a named service
-      - "traefik.http.routers.copyparty-https.service=copyparty"
-
-      # Define the service (container’s internal port)
-      - "traefik.http.services.copyparty.loadbalancer.server.port=3923"
-
-      # HOMEPAGE
-      - homepage.group=Management
-      - homepage.name=Copyparty
-      - homepage.icon=si-thestorygraph
-      - homepage.href=https://copyparty.pulosu.hexie.dev
-      - homepage.description=file browser
-      #- homepage.ping=https://copyparty.pulosu.hexie.dev
+      <<: [*traefik-template, *homepage-template]
 
 networks:
   frontend:
