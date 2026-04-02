@@ -1,19 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
-  traefik.http.routers.traefik-dashboard-http.rule: Host(`traefik-dashboard.pulosu.hexie.dev`)
+  traefik.http.routers.traefik-dashboard-http.rule: Host(`${APP_NAME}-dashboard.${BASE_DOMAIN}`)
   traefik.http.routers.traefik-dashboard-http.entrypoints: web
   traefik.http.routers.traefik-dashboard-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
-  traefik.http.routers.traefik-dashboard-https.rule: Host(`traefik-dashboard.pulosu.hexie.dev`)
+  traefik.http.routers.traefik-dashboard-https.rule: Host(`${APP_NAME}-dashboard.${BASE_DOMAIN}`)
   traefik.http.routers.traefik-dashboard-https.entrypoints: websecure
   traefik.http.routers.traefik-dashboard-https.tls: true
   traefik.http.routers.traefik-dashboard-https.tls.certresolver: cloudflare
-  # Match router to a named service
   traefik.http.routers.traefik-dashboard-https.service: api@internal
-  # Define internal port for the service
-  #traefik.http.services.traefik-dashboard.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
@@ -21,27 +16,25 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}-dashboard.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.type: traefik
-  homepage.widget.url: https://traefik-dashboard.pulosu.hexie.dev
+  homepage.widget.url: https://${APP_NAME}-dashboard.${BASE_DOMAIN}
   homepage.widget.username: ${HOMEPAGE_WIDGET_USERNAME}
   homepage.widget.password: ${HOMEPAGE_WIDGET_PASSWORD}
 
-
 services:
   traefik:
-    image: traefik:latest
-    container_name: traefik
-    ports:
-      - "80:80"
-      - "443:443"
+    container_name: ${APP_NAME}
+    image: traefik:${IMAGE_TAG:-latest}
+    restart: unless-stopped
     environment:
-      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+    ports:
+      - 80:80
+      - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - /apps/traefik/certs:/var/traefik/certs/:rw
-    restart: unless-stopped
+      - ./certs:/var/traefik/certs
     networks:
       - frontend
       - backend
@@ -51,5 +44,5 @@ services:
 networks:
   frontend:
     external: true
-  backend: 
+  backend:
     external: true
