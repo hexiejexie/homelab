@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.grafana-http.rule: Host(`grafana.pulosu.hexie.dev`)
+  traefik.http.routers.grafana-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.grafana-http.entrypoints: web
   traefik.http.routers.grafana-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.grafana-https.rule: Host(`grafana.pulosu.hexie.dev`)
+  traefik.http.routers.grafana-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.grafana-https.entrypoints: websecure
   traefik.http.routers.grafana-https.tls: true
   traefik.http.routers.grafana-https.tls.certresolver: cloudflare

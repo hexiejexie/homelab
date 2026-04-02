@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.metubedl-http.rule: Host(`metubedl.pulosu.hexie.dev`)
+  traefik.http.routers.metubedl-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.metubedl-http.entrypoints: web
   traefik.http.routers.metubedl-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.metubedl-https.rule: Host(`metubedl.pulosu.hexie.dev`)
+  traefik.http.routers.metubedl-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.metubedl-https.entrypoints: websecure
   traefik.http.routers.metubedl-https.tls: true
   traefik.http.routers.metubedl-https.tls.certresolver: cloudflare

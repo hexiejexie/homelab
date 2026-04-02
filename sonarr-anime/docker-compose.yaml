@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.sonarr-anime-http.rule: Host(`sonarr-anime.pulosu.hexie.dev`)
+  traefik.http.routers.sonarr-anime-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.sonarr-anime-http.entrypoints: web
   traefik.http.routers.sonarr-anime-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.sonarr-anime-https.rule: Host(`sonarr-anime.pulosu.hexie.dev`)
+  traefik.http.routers.sonarr-anime-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.sonarr-anime-https.entrypoints: websecure
   traefik.http.routers.sonarr-anime-https.tls: true
   traefik.http.routers.sonarr-anime-https.tls.certresolver: cloudflare

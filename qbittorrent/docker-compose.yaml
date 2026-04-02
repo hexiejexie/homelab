@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.qbittorrent-http.rule: Host(`qbittorrent.pulosu.hexie.dev`)
+  traefik.http.routers.qbittorrent-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-http.entrypoints: web
   traefik.http.routers.qbittorrent-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.qbittorrent-https.rule: Host(`qbittorrent.pulosu.hexie.dev`)
+  traefik.http.routers.qbittorrent-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-https.entrypoints: websecure
   traefik.http.routers.qbittorrent-https.tls: true
   traefik.http.routers.qbittorrent-https.tls.certresolver: cloudflare

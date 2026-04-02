@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.wireguard-http.rule: Host(`wireguard.pulosu.hexie.dev`)
+  traefik.http.routers.wireguard-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.wireguard-http.entrypoints: web
   traefik.http.routers.wireguard-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.wireguard-https.rule: Host(`wireguard.pulosu.hexie.dev`)
+  traefik.http.routers.wireguard-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.wireguard-https.entrypoints: websecure
   traefik.http.routers.wireguard-https.tls: true
   traefik.http.routers.wireguard-https.tls.certresolver: cloudflare

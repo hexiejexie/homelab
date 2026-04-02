@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.kiwix-http.rule: Host(`kiwix.pulosu.hexie.dev`)
+  traefik.http.routers.kiwix-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.kiwix-http.entrypoints: web
   traefik.http.routers.kiwix-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.kiwix-https.rule: Host(`kiwix.pulosu.hexie.dev`)
+  traefik.http.routers.kiwix-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.kiwix-https.entrypoints: websecure
   traefik.http.routers.kiwix-https.tls: true
   traefik.http.routers.kiwix-https.tls.certresolver: cloudflare

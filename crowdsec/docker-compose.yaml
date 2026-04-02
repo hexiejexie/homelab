@@ -1,31 +1,3 @@
-#x-traefik-labels: &traefik-template
-#  traefik.enable: true
-#  # HTTP → HTTPS redirect
-#  traefik.http.routers.crowdsec-http.rule: Host(`crowdsec.pulosu.hexie.dev`)
-#  traefik.http.routers.crowdsec-http.entrypoints: web
-#  traefik.http.routers.crowdsec-http.middlewares: redirect-to-https
-#  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-#  # HTTPS router
-#  traefik.http.routers.crowdsec-https.rule: Host(`crowdsec.pulosu.hexie.dev`)
-#  traefik.http.routers.crowdsec-https.entrypoints: websecure
-#  traefik.http.routers.crowdsec-https.tls: true
-#  traefik.http.routers.crowdsec-https.tls.certresolver: cloudflare
-#  # Match router to a named service
-#  traefik.http.routers.crowdsec-https.service: crowdsec
-#  # Define internal port for the service
-#  traefik.http.services.crowdsec.loadbalancer.server.port: ${APP_PORT}
-
-
-#x-homepage-labels: &homepage-template
-#  homepage.group: ${HOMEPAGE_GROUP}
-#  homepage.name: ${HOMEPAGE_NAME}
-#  homepage.icon: ${HOMEPAGE_ICON}
-#  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
-#  homepage.description: ${HOMEPAGE_DESCRIPTION}
-#  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
-
-
-
 services:
   crowdsec:
     container_name: ${APP_NAME}

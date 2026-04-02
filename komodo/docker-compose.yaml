@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.komodo-http.rule: Host(`komodo.pulosu.hexie.dev`)
+  traefik.http.routers.komodo-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.komodo-http.entrypoints: web
   traefik.http.routers.komodo-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.komodo-https.rule: Host(`komodo.pulosu.hexie.dev`)
+  traefik.http.routers.komodo-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.komodo-https.entrypoints: websecure
   traefik.http.routers.komodo-https.tls: true
   traefik.http.routers.komodo-https.tls.certresolver: cloudflare

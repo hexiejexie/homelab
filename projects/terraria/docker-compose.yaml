@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.terraria-http.rule: Host(`terraria.pulosu.hexie.dev`)
+  traefik.http.routers.terraria-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.terraria-http.entrypoints: web
   traefik.http.routers.terraria-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.terraria-https.rule: Host(`terraria.pulosu.hexie.dev`)
+  traefik.http.routers.terraria-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.terraria-https.entrypoints: websecure
   traefik.http.routers.terraria-https.tls: true
   traefik.http.routers.terraria-https.tls.certresolver: cloudflare

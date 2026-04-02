@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.mealie-http.rule: Host(`mealie.pulosu.hexie.dev`)
+  traefik.http.routers.mealie-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.mealie-http.entrypoints: web
   traefik.http.routers.mealie-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.mealie-https.rule: Host(`mealie.pulosu.hexie.dev`)
+  traefik.http.routers.mealie-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.mealie-https.entrypoints: websecure
   traefik.http.routers.mealie-https.tls: true
   traefik.http.routers.mealie-https.tls.certresolver: cloudflare

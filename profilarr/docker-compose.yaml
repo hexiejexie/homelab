@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.profilarr-http.rule: Host(`profilarr.pulosu.hexie.dev`)
+  traefik.http.routers.profilarr-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.profilarr-http.entrypoints: web
   traefik.http.routers.profilarr-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.profilarr-https.rule: Host(`profilarr.pulosu.hexie.dev`)
+  traefik.http.routers.profilarr-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.profilarr-https.entrypoints: websecure
   traefik.http.routers.profilarr-https.tls: true
   traefik.http.routers.profilarr-https.tls.certresolver: cloudflare

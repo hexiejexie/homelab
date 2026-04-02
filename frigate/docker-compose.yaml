@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.frigate-http.rule: Host(`frigate.pulosu.hexie.dev`)
+  traefik.http.routers.frigate-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.frigate-http.entrypoints: web
   traefik.http.routers.frigate-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.frigate-https.rule: Host(`frigate.pulosu.hexie.dev`)
+  traefik.http.routers.frigate-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.frigate-https.entrypoints: websecure
   traefik.http.routers.frigate-https.tls: true
   traefik.http.routers.frigate-https.tls.certresolver: cloudflare

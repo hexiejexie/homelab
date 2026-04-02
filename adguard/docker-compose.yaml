@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.adguard-http.rule: Host(`adguard.pulosu.hexie.dev`)
+  traefik.http.routers.adguard-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.adguard-http.entrypoints: web
   traefik.http.routers.adguard-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.adguard-https.rule: Host(`adguard.pulosu.hexie.dev`)
+  traefik.http.routers.adguard-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.adguard-https.entrypoints: websecure
   traefik.http.routers.adguard-https.tls: true
   traefik.http.routers.adguard-https.tls.certresolver: cloudflare

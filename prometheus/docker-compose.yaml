@@ -1,12 +1,12 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
   # HTTP → HTTPS redirect
-  traefik.http.routers.prometheus-http.rule: Host(`prometheus.pulosu.hexie.dev`)
+  traefik.http.routers.prometheus-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.prometheus-http.entrypoints: web
   traefik.http.routers.prometheus-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   # HTTPS router
-  traefik.http.routers.prometheus-https.rule: Host(`prometheus.pulosu.hexie.dev`)
+  traefik.http.routers.prometheus-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.prometheus-https.entrypoints: websecure
   traefik.http.routers.prometheus-https.tls: true
   traefik.http.routers.prometheus-https.tls.certresolver: cloudflare
