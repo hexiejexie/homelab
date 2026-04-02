@@ -1,18 +1,14 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  # HTTP → HTTPS redirect
   traefik.http.routers.glances-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.glances-http.entrypoints: web
   traefik.http.routers.glances-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  # HTTPS router
   traefik.http.routers.glances-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.glances-https.entrypoints: websecure
   traefik.http.routers.glances-https.tls: true
   traefik.http.routers.glances-https.tls.certresolver: cloudflare
-  # Match router to a named service
-  traefik.http.routers.glances-https.service: glances
-  # Define internal port for the service
+  traefik.http.routers.glances-https.service: ${APP_NAME}
   traefik.http.services.glances.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -23,25 +19,24 @@ x-homepage-labels: &homepage-template
   homepage.description: ${HOMEPAGE_DESCRIPTION}
   #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
   #homepage.widget.type: glances
-  #homepage.widget.url: https://glances.pulosu.hexie.dev
+  #homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   #homepage.widget.version: 4
   #homepage.widget.diskUnits: bytes
   #homepage.widget.metric: network:eth0
   #homepage.widget.refreshInterval: 5000
 
-
 services:
   glances:
     container_name: ${APP_NAME}
-    image: nicolargo/glances:ubuntu-latest-full
+    image: nicolargo/glances:${IMAGE_TAG:-ubuntu-latest-full}
     restart: unless-stopped
-    user: "0:0"
+    pid: host
     environment:
-      - PUID=1000 
-      - PGID=1000
-      - GLANCES_OPT=-w
+      GLANCES_OPT: -w
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /etc/os-release:/etc/os-release:ro
     networks:
       - frontend
     labels:

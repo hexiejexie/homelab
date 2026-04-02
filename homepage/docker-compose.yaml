@@ -1,41 +1,33 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.homepage-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.homepage-http.entrypoints: web
+  traefik.http.routers.homepage-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.homepage-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.homepage-https.entrypoints: websecure
+  traefik.http.routers.homepage-https.tls: true
+  traefik.http.routers.homepage-https.tls.certresolver: cloudflare
+  traefik.http.routers.homepage-https.service: ${APP_NAME}
+  traefik.http.services.homepage.loadbalancer.server.port: ${APP_PORT}
+
 services:
   homepage:
-    image: ghcr.io/gethomepage/homepage:latest
-    container_name: homepage
-    environment:
-     HOMEPAGE_ALLOWED_HOSTS: homepage.pulosu.hexie.dev # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
-     PUID: 0 # optional, your user id
-     PGID: 0 # optional, your group id
-     HOMEPAGE_VAR_PROXMOX_USERNAME: $HOMEPAGE_VAR_PROXMOX_USERNAME
-     HOMEPAGE_VAR_PROXMOX_PASSWORD: $HOMEPAGE_VAR_PROXMOX_PASSWORD
-    volumes:
-      - .:/app/config # Make sure your local config directory exists
-      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    container_name: ${APP_NAME}
+    image: ghcr.io/gethomepage/homepage:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    labels:
-      # TRAEFIK
-      - "traefik.enable=true"
-
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.homepage-http.rule=Host(`homepage.pulosu.hexie.dev`)"
-      - "traefik.http.routers.homepage-http.entrypoints=web"
-      - "traefik.http.routers.homepage-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
-      # HTTPS router
-      - "traefik.http.routers.homepage-https.rule=Host(`homepage.pulosu.hexie.dev`)"
-      - "traefik.http.routers.homepage-https.entrypoints=websecure"
-      - "traefik.http.routers.homepage-https.tls=true"
-      - "traefik.http.routers.homepage-https.tls.certresolver=cloudflare"
-
-      # Match router to a named service
-      - "traefik.http.routers.homepage-https.service=homepage"
-
-      # Define the service (container’s internal port)
-      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
-
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: ${APP_NAME}.${BASE_DOMAIN}
+      HOMEPAGE_VAR_PROXMOX_USERNAME: ${HOMEPAGE_VAR_PROXMOX_USERNAME}
+      HOMEPAGE_VAR_PROXMOX_PASSWORD: ${HOMEPAGE_VAR_PROXMOX_PASSWORD}
+    volumes:
+      - .:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - frontend
+    labels:
+      <<: *traefik-template
+
 networks:
   frontend:
     external: true
