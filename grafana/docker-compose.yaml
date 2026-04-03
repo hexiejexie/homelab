@@ -10,6 +10,8 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.grafana-https.tls.certresolver: cloudflare
   traefik.http.routers.grafana-https.service: ${APP_NAME}
   traefik.http.services.grafana.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.grafana-https.middlewares: authentik #proxy auth just in case
+
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
