@@ -29,6 +29,12 @@ services:
     environment:
       GF_SERVER_ROOT_URL: https://${APP_NAME}.${BASE_DOMAIN}/
       GF_PLUGINS_PREINSTALL: grafana-clock-panel
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: ${SMTP_HOST}:${SMTP_PORT}
+      GF_SMTP_USER: ${SMTP_USERNAME}
+      GF_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      GF_SMTP_FROM_ADDRESS: ${SMTP_FROM}
+      GF_SMTP_STARTTLS_POLICY: ${SMTP_SECURITY}
     volumes:
       - ./grafana_storage:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning:ro
