@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.username: ${HOMEPAGE_WIDGET_USERNAME}
   homepage.widget.password: ${HOMEPAGE_WIDGET_PASSWORD}
 
+x-kuma-labels: &kuma-template
+  kuma.traefik.http.name: ${HOMEPAGE_NAME}-dashboard
+  kuma.traefik.http.url: https://${APP_NAME}-dashboard.${BASE_DOMAIN}
+  kuma.traefik.http.max_retries: 3
+  kuma.traefik.http.interval: 60
+
 services:
   traefik:
     container_name: ${APP_NAME}
@@ -39,7 +45,7 @@ services:
       - frontend
       - backend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

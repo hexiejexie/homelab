@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.metubedl.http.name: ${HOMEPAGE_NAME}
+  kuma.metubedl.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.metubedl.http.max_retries: 3
+  kuma.metubedl.http.interval: 60
+
 
 
 services:
@@ -36,7 +42,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.scrutiny.http.name: ${HOMEPAGE_NAME}
+  kuma.scrutiny.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.scrutiny.http.max_retries: 3
+  kuma.scrutiny.http.interval: 60
+
 services:
   scrutiny:
     container_name: ${APP_NAME}
@@ -41,7 +47,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

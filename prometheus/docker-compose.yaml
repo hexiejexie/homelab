@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.prometheus.http.name: ${HOMEPAGE_NAME}
+  kuma.prometheus.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.prometheus.http.max_retries: 3
+  kuma.prometheus.http.interval: 60
+
 services:
   prometheus:
     container_name: ${APP_NAME}
@@ -36,7 +42,7 @@ services:
       - frontend
       - backend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
   cadvisor:
     container_name: cadvisor

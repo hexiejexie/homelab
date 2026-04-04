@@ -10,7 +10,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.qbittorrent-https.tls.certresolver: cloudflare
   traefik.http.routers.qbittorrent-https.service: ${APP_NAME}
   traefik.http.services.qbittorrent.loadbalancer.server.port: ${APP_PORT}
-  traefik.http.routers.copyparty-https.middlewares: authentik #proxy auth just in case
+  traefik.http.routers.qbittorrent-https.middlewares: authentik #proxy auth just in case
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
@@ -22,6 +22,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.username: ${HOMEPAGE_WIDGET_USERNAME}
   homepage.widget.password: ${HOMEPAGE_WIDGET_PASSWORD}
+
+x-kuma-labels: &kuma-template
+  kuma.qbittorrent.http.name: ${HOMEPAGE_NAME}
+  kuma.qbittorrent.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.qbittorrent.http.max_retries: 3
+  kuma.qbittorrent.http.interval: 60
 
 services:
   qbittorrent:
@@ -40,7 +46,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

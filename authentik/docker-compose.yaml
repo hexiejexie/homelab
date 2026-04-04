@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.authentik.http.name: ${HOMEPAGE_NAME}
+  kuma.authentik.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.authentik.http.max_retries: 3
+  kuma.authentik.http.interval: 60
+
 x-authentik-env: &authentik-env
   AUTHENTIK_POSTGRESQL__HOST: postgresql
   AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
@@ -89,7 +95,7 @@ services:
     container_name: ${APP_NAME}
     command: server
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
     networks:
       - frontend
       - backend

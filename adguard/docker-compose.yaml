@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.adguard.http.name: ${HOMEPAGE_NAME}
+  kuma.adguard.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.adguard.http.max_retries: 3
+  kuma.adguard.http.interval: 60
+
 services:
   adguard:
     container_name: ${APP_NAME}
@@ -34,7 +40,7 @@ services:
       - frontend
       - backend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

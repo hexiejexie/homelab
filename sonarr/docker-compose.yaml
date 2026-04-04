@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://sonarr.pulosu.hexie.dev
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY} 
 
+x-kuma-labels: &kuma-template
+  kuma.sonarr.http.name: ${HOMEPAGE_NAME}
+  kuma.sonarr.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.sonarr.http.max_retries: 3
+  kuma.sonarr.http.interval: 60
+
 
 
 services:
@@ -37,7 +43,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

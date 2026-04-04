@@ -24,6 +24,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.showSummary: true
   homepage.widget.showStacks: true
 
+x-kuma-labels: &kuma-template
+  kuma.komodo.http.name: ${HOMEPAGE_NAME}
+  kuma.komodo.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.komodo.http.max_retries: 3
+  kuma.komodo.http.interval: 60
+
 services:
   mongo:
     container_name: mongo-komodo
@@ -58,7 +64,7 @@ services:
       - frontend
       - backend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
   periphery:
     container_name: komodo-periphery

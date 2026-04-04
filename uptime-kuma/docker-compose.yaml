@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.uptime-kuma.http.name: ${HOMEPAGE_NAME}
+  kuma.uptime-kuma.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.uptime-kuma.http.max_retries: 3
+  kuma.uptime-kuma.http.interval: 60
+
 services:
   uptime-kuma:
     container_name: ${APP_NAME}
@@ -29,7 +35,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
   autokuma:
     container_name: autokuma
     image: ghcr.io/bigboot/autokuma:${AUTOKUMA_TAG:-latest}

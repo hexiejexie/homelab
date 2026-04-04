@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://radarr.pulosu.hexie.dev
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 
+x-kuma-labels: &kuma-template
+  kuma.radarr.http.name: ${HOMEPAGE_NAME}
+  kuma.radarr.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.radarr.http.max_retries: 3
+  kuma.radarr.http.interval: 60
+
 services:
   radarr:
     container_name: ${APP_NAME}
@@ -35,7 +41,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

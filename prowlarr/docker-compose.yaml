@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://prowlarr.pulosu.hexie.dev
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 
+x-kuma-labels: &kuma-template
+  kuma.prowlarr.http.name: ${HOMEPAGE_NAME}
+  kuma.prowlarr.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.prowlarr.http.max_retries: 3
+  kuma.prowlarr.http.interval: 60
+
 
 
 services:
@@ -36,7 +42,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

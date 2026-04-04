@@ -17,13 +17,12 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
-  #homepage.widget.type: glances
-  #homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
-  #homepage.widget.version: 4
-  #homepage.widget.diskUnits: bytes
-  #homepage.widget.metric: network:eth0
-  #homepage.widget.refreshInterval: 5000
+
+x-kuma-labels: &kuma-template
+  kuma.glances.http.name: ${HOMEPAGE_NAME}
+  kuma.glances.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.glances.http.max_retries: 3
+  kuma.glances.http.interval: 60
 
 services:
   glances:
@@ -40,7 +39,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

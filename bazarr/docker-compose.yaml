@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 
+x-kuma-labels: &kuma-template
+  kuma.bazarr.http.name: ${HOMEPAGE_NAME}
+  kuma.bazarr.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.bazarr.http.max_retries: 3
+  kuma.bazarr.http.interval: 60
+
 services:
   bazarr:
     container_name: ${APP_NAME}
@@ -35,7 +41,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

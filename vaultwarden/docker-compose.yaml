@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.vaultwarden.http.name: ${HOMEPAGE_NAME}
+  kuma.vaultwarden.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.vaultwarden.http.max_retries: 3
+  kuma.vaultwarden.http.interval: 60
+
 services:
   vaultwarden:
     container_name: ${APP_NAME}
@@ -38,7 +44,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

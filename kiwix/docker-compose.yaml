@@ -18,18 +18,25 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.kiwix.http.name: ${HOMEPAGE_NAME}
+  kuma.kiwix.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.kiwix.http.max_retries: 3
+  kuma.kiwix.http.interval: 60
+
 services:
   kiwix:
     container_name: ${APP_NAME}
     image: ghcr.io/kiwix/kiwix-serve:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    user: "0:0"
     command: "*.zim"
     volumes:
       - /18tb/kiwix/zim:/data
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

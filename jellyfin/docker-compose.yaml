@@ -27,6 +27,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.showEpisodeNumber: true
   homepage.widget.expandOneStreamToTwoRows: false
 
+x-kuma-labels: &kuma-template
+  kuma.jellyfin.http.name: ${HOMEPAGE_NAME}
+  kuma.jellyfin.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.jellyfin.http.max_retries: 3
+  kuma.jellyfin.http.interval: 60
+
 services:
   jellyfin:
     container_name: ${APP_NAME}
@@ -45,7 +51,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

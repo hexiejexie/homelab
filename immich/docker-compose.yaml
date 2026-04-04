@@ -18,6 +18,12 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
 
+x-kuma-labels: &kuma-template
+  kuma.immich.http.name: ${HOMEPAGE_NAME}
+  kuma.immich.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.immich.http.max_retries: 3
+  kuma.immich.http.interval: 60
+
 x-immich-env: &immich-env
   DB_DATABASE_NAME: ${DB_DATABASE_NAME}
   DB_PASSWORD: ${DB_PASSWORD}
@@ -51,7 +57,7 @@ services:
       redis:
         condition: service_healthy
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
   immich-machine-learning:
     container_name: immich-machine-learning

@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://sonarr-anime.pulosu.hexie.dev
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 
+x-kuma-labels: &kuma-template
+  kuma.sonarr-anime.http.name: ${HOMEPAGE_NAME}
+  kuma.sonarr-anime.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.sonarr-anime.http.max_retries: 3
+  kuma.sonarr-anime.http.interval: 60
+
 services:
   sonarr-anime:
     container_name: ${APP_NAME}
@@ -35,7 +41,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:

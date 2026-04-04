@@ -21,6 +21,12 @@ x-homepage-labels: &homepage-template
   homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 
+x-kuma-labels: &kuma-template
+  kuma.jellyseer.http.name: ${HOMEPAGE_NAME}
+  kuma.jellyseer.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.jellyseer.http.max_retries: 3
+  kuma.jellyseer.http.interval: 60
+
 services:
   jellyseer:
     container_name: ${APP_NAME}
@@ -39,7 +45,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:
