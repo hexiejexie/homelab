@@ -12,13 +12,19 @@ x-traefik-labels: &traefik-template
   traefik.http.services.grafana.loadbalancer.server.port: ${APP_PORT}
   traefik.http.routers.grafana-https.middlewares: authentik #proxy auth just in case
 
-
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
   homepage.name: ${HOMEPAGE_NAME}
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.grafana.http.name: ${HOMEPAGE_NAME}
+  kuma.grafana.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.grafana.http.max_retries: 3
+  kuma.grafana.http.interval: 60
+
 
 services:
   grafana:
@@ -43,7 +49,7 @@ services:
       - frontend
       - backend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:
