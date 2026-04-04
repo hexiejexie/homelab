@@ -1,0 +1,73 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.paperless-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.paperless-http.entrypoints: web
+  traefik.http.routers.paperless-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.paperless-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.paperless-https.entrypoints: websecure
+  traefik.http.routers.paperless-https.tls: true
+  traefik.http.routers.paperless-https.tls.certresolver: cloudflare
+  traefik.http.routers.paperless-https.service: ${APP_NAME}
+  traefik.http.services.paperless.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+services:
+  paperless:
+    container_name: ${APP_NAME}
+    image: ghcr.io/paperless-ngx/paperless-ngx:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      paperless-redis:
+        condition: service_healthy
+    environment:
+      PAPERLESS_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_DBENGINE: sqlite
+      PAPERLESS_OCR_LANGUAGE: eng
+      PAPERLESS_TIME_ZONE: Europe/Amsterdam
+      PAPERLESS_ADMIN_USER: ${ADMIN_USER}
+      PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PAPERLESS_EMAIL_HOST: ${SMTP_HOST}
+      PAPERLESS_EMAIL_PORT: ${SMTP_PORT}
+      PAPERLESS_EMAIL_HOST_USER: ${SMTP_USERNAME}
+      PAPERLESS_EMAIL_HOST_PASSWORD: ${SMTP_PASSWORD}
+      PAPERLESS_EMAIL_FROM: ${SMTP_FROM}
+      PAPERLESS_EMAIL_USE_TLS: "true"
+    volumes:
+      - ./data:/usr/src/paperless/data
+      - ./media:/usr/src/paperless/media
+      - ./export:/usr/src/paperless/export
+      - ./consume:/usr/src/paperless/consume
+    networks:
+      - frontend
+      - backend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+  paperless-redis:
+    container_name: paperless-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - ./redis:/data
+    networks:
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
