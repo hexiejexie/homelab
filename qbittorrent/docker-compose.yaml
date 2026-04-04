@@ -35,6 +35,7 @@ services:
     volumes:
       - ./qbittorrent:/config
       - /18tb/media:/data
+      - /18tb/kiwix/zim:/kiwix/zim
     networks:
       - frontend
     labels:
