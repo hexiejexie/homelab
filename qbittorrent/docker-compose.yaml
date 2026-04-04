@@ -10,6 +10,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.qbittorrent-https.tls.certresolver: cloudflare
   traefik.http.routers.qbittorrent-https.service: ${APP_NAME}
   traefik.http.services.qbittorrent.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.copyparty-https.middlewares: authentik #proxy auth just in case
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
