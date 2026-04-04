@@ -18,7 +18,7 @@ x-homepage-labels: &homepage-template
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
   homepage.widget.type: komodo
-  homepage.widget.url: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.widget.url: http://${APP_NAME}:${APP_PORT}
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
   homepage.widget.secret: ${HOMEPAGE_WIDGET_SECRET}
   homepage.widget.showSummary: true

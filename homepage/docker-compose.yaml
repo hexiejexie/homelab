@@ -12,7 +12,7 @@ x-traefik-labels: &traefik-template
   traefik.http.services.homepage.loadbalancer.server.port: ${APP_PORT}
 
 x-kuma-labels: &kuma-template
-  kuma.homepage.http.name: ${HOMEPAGE_NAME}
+  kuma.homepage.http.name: ${HOMEPAGE_NAME:-Homepage}
   kuma.homepage.http.url: https://${APP_NAME}.${BASE_DOMAIN}
   kuma.homepage.http.max_retries: 3
   kuma.homepage.http.interval: 60
@@ -32,7 +32,7 @@ services:
     networks:
       - frontend
     labels:
-      <<: *traefik-template
+      <<: [*traefik-template, *kuma-template]
 
 networks:
   frontend:
