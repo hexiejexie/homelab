@@ -1,0 +1,36 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.uptime-kuma-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.uptime-kuma-http.entrypoints: web
+  traefik.http.routers.uptime-kuma-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.uptime-kuma-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.uptime-kuma-https.entrypoints: websecure
+  traefik.http.routers.uptime-kuma-https.tls: true
+  traefik.http.routers.uptime-kuma-https.tls.certresolver: cloudflare
+  traefik.http.routers.uptime-kuma-https.service: ${APP_NAME}
+  traefik.http.services.uptime-kuma.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+services:
+  uptime-kuma:
+    container_name: ${APP_NAME}
+    image: louislam/uptime-kuma:${IMAGE_TAG:-1}
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true
