@@ -10,6 +10,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.copyparty-https.tls.certresolver: cloudflare
   traefik.http.routers.copyparty-https.service: ${APP_NAME}
   traefik.http.services.copyparty.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.copyparty-https.middlewares: authentik #proxy auth just in case
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
