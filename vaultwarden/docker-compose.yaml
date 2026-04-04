@@ -1,0 +1,45 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.vaultwarden-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.vaultwarden-http.entrypoints: web
+  traefik.http.routers.vaultwarden-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.vaultwarden-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.vaultwarden-https.entrypoints: websecure
+  traefik.http.routers.vaultwarden-https.tls: true
+  traefik.http.routers.vaultwarden-https.tls.certresolver: cloudflare
+  traefik.http.routers.vaultwarden-https.service: ${APP_NAME}
+  traefik.http.services.vaultwarden.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+services:
+  vaultwarden:
+    container_name: ${APP_NAME}
+    image: vaultwarden/server:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DOMAIN: https://${APP_NAME}.${BASE_DOMAIN}
+      SIGNUPS_ALLOWED: "false"
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURITY: ${SMTP_SECURITY}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+    volumes:
+      - ./data:/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template]
+
+networks:
+  frontend:
+    external: true
