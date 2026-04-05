@@ -64,7 +64,7 @@ services:
       ADGUARD_SERVERS: http://adguard:80
       ADGUARD_USERNAMES: ${ADGUARD_USER}
       ADGUARD_PASSWORDS: ${ADGUARD_PASS}
-      INTERVAL: 120
+      INTERVAL: 120s
     networks:
       - backend
 networks:
