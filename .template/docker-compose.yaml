@@ -1,15 +1,15 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.PLACEHOLDER-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.PLACEHOLDER-http.entrypoints: web
-  traefik.http.routers.PLACEHOLDER-http.middlewares: redirect-to-https
+  traefik.http.routers.frigate-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.frigate-http.entrypoints: web
+  traefik.http.routers.frigate-http.middlewares: redirect-to-https
   traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
-  traefik.http.routers.PLACEHOLDER-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.PLACEHOLDER-https.entrypoints: websecure
-  traefik.http.routers.PLACEHOLDER-https.tls: true
-  traefik.http.routers.PLACEHOLDER-https.tls.certresolver: cloudflare
-  traefik.http.routers.PLACEHOLDER-https.service: ${APP_NAME}
-  traefik.http.services.PLACEHOLDER.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.frigate-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.frigate-https.entrypoints: websecure
+  traefik.http.routers.frigate-https.tls: true
+  traefik.http.routers.frigate-https.tls.certresolver: cloudflare
+  traefik.http.routers.frigate-https.service: ${APP_NAME}
+  traefik.http.services.frigate.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
@@ -17,20 +17,30 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  #homepage.ping: https://${APP_NAME}.${BASE_DOMAIN}
+
+x-kuma-labels: &kuma-template
+  kuma.frigate.http.name: ${HOMEPAGE_NAME}
+  kuma.frigate.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.frigate.http.max_retries: 3
+  kuma.frigate.http.interval: 60
 
 services:
-  PLACEHOLDER:
+  frigate:
     container_name: ${APP_NAME}
-    image: PLACEHOLDERIMAGE/PLACEHOLDER:${IMAGE_TAG:-latest}
+    image: PLACEHOLDER:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    environment:
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:5000/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
     networks:
       - frontend
     labels:
-      <<: [*traefik-template, *homepage-template]
+      <<: [*traefik-template, *homepage-template, *kuma-template]
 
 networks:
   frontend:
