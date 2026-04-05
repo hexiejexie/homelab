@@ -26,9 +26,11 @@ services:
       HOMEPAGE_ALLOWED_HOSTS: ${APP_NAME}.${BASE_DOMAIN}
       HOMEPAGE_VAR_PROXMOX_USERNAME: ${HOMEPAGE_VAR_PROXMOX_USERNAME}
       HOMEPAGE_VAR_PROXMOX_PASSWORD: ${HOMEPAGE_VAR_PROXMOX_PASSWORD}
+    #  HOMEPAGE_VAR_WEATHER_API: ${HOMEPAGE_VAR_WEATHER_API}
     volumes:
       - .:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /18tb:/storage
     networks:
       - frontend
     labels:
