@@ -1,6 +1,6 @@
 # - Homelab -
 
-Self-hosted infrastructure running on Proxmox VE, fully containerized with Docker Compose. Each service lives in its own directory with a `docker-compose.yml` - clone and deploy.
+Self-hosted infrastructure running on Proxmox VE, fully containerized with Docker Compose. Each service lives in its own directory with a `docker-compose.yaml` and `.env` — clone, configure, deploy.
 
 > **Why?** Because cloud subscriptions add up, self-hosting teaches you more in a weekend than a month of tutorials, and it's fun.
 
@@ -13,79 +13,103 @@ graph TB
     subgraph Internet
         WAN[WAN]
     end
- 
-    subgraph Network["Network - Physical"]
+
+    subgraph Network["Network · Physical"]
         MIKROTIK["MikroTik RB2011UiAS-2HnD-IN<br/>(router / firewall)"]
         SWITCH["TP-Link TL-SG108E<br/>(managed switch)"]
     end
- 
-    subgraph PVE["Proxmox VE - Ryzen 5 1600 · 40 GB RAM"]
- 
-        subgraph CT1337["CT 1337 - Docker LXC"]
+
+    subgraph PVE["Proxmox VE · Ryzen 5 1600 · 40 GB RAM"]
+
+        NODEEXPORTER["node_exporter<br/>(host)"]
+        SCRUTINYCOLLECTOR["scrutiny-collector<br/>(host)"]
+
+        subgraph CT1337["CT 1337 · Docker LXC"]
             direction TB
- 
-            subgraph proxy["Networking and Security"]
+
+            subgraph net["Network"]
                 TRAEFIK[Traefik]
                 AUTHENTIK[Authentik]
                 CROWDSEC[CrowdSec]
-                WGEASY[wg-easy]
                 ADGUARD[AdGuard Home]
+                WGEASY[WireGuard]
+                VAULTWARDEN[Vaultwarden]
             end
- 
-            subgraph monitoring["Monitoring and Observability"]
-                GRAFANA[Grafana]
+
+            subgraph monitoring["Monitoring"]
                 PROMETHEUS[Prometheus]
+                GRAFANA[Grafana]
+                CADVISOR[cAdvisor]
+                ADGUARDEXPORTER[AdGuard Exporter]
+                UPTIMEKUMA[Uptime Kuma + AutoKuma]
+                SCRUTINY[Scrutiny Web]
                 GLANCES[Glances]
-                SCRUTINY[Scrutiny]
                 MYSPEED[MySpeed]
             end
- 
-            subgraph media["Media Stack"]
-                JELLYFIN[Jellyfin]
-                JELLYSEER[Jellyseer]
+
+            subgraph arr["Arr Stack"]
+                FLARESOLVERR[FlareSolverr]
+                PROWLARR[Prowlarr]
                 SONARR[Sonarr]
                 SONARRANIME[Sonarr-Anime]
                 RADARR[Radarr]
-                BAZARR[Bazarr]
-                PROWLARR[Prowlarr]
-                PROFILARR[Profilarr]
                 QBIT[qBittorrent]
-                FLARESOLVERR[FlareSolverr]
+                BAZARR[Bazarr]
+                PROFILARR[Profilarr]
+            end
+
+            subgraph media["Media"]
+                JELLYFIN[Jellyfin]
+                JELLYSEER[Jellyseerr]
                 METUBE[MeTube]
             end
- 
-            subgraph apps["Apps and Productivity"]
-                MEALIE[Mealie]
+
+            subgraph apps["Apps"]
                 HOMEPAGE[Homepage]
+                MEALIE[Mealie]
+                PAPERLESS[Paperless-ngx]
                 KIWIX[Kiwix]
                 THELOUNGE[The Lounge]
                 COPYPARTY[Copyparty]
             end
- 
-            subgraph infra["Infrastructure"]
+
+            subgraph system["System"]
                 PORTAINER[Portainer]
                 KOMODO[Komodo]
                 FRIGATE[Frigate NVR]
-                CRAFTY[Crafty - Minecraft]
-                PORTAINER ~~~ KOMODO ~~~ FRIGATE ~~~ CRAFTY
+                BTOP[btop]
+                NCDU[ncdu]
+            end
+
+            subgraph games["Games"]
+                CRAFTY[Crafty]
+                TERRARIA[Terraria]
             end
         end
- 
-        subgraph CT420["CT 420 - CloudPanel LXC"]
+
+        subgraph CT420["CT 420 · CloudPanel LXC"]
             HEXIE["hexie.dev<br/>(Ghost CMS)"]
             IMEANIT["imeanit.nl<br/>(Ghost CMS)"]
         end
     end
- 
+
     WAN --> MIKROTIK --> SWITCH -->|"self-terminated Cat6"| PVE
-    TRAEFIK --> AUTHENTIK
-    TRAEFIK --> CROWDSEC
-    style proxy fill:#4a1a1a,stroke:#ef4444,stroke-width:2px,color:#fff
+    NODEEXPORTER -->|"host metrics"| PROMETHEUS
+    SCRUTINYCOLLECTOR -->|"SMART"| SCRUTINY
+    TRAEFIK -->|"request metrics"| PROMETHEUS
+    CADVISOR --> PROMETHEUS
+    ADGUARDEXPORTER --> PROMETHEUS
+    PROMETHEUS --> GRAFANA
+
+    style net fill:#4a1a1a,stroke:#ef4444,stroke-width:2px,color:#fff
     style monitoring fill:#1a3a1a,stroke:#22c55e,stroke-width:2px,color:#fff
+    style arr fill:#1a1a4a,stroke:#818cf8,stroke-width:2px,color:#fff
     style media fill:#1a1a3a,stroke:#3b82f6,stroke-width:2px,color:#fff
     style apps fill:#1a3a3a,stroke:#14b8a6,stroke-width:2px,color:#fff
-    style infra fill:#2a2a2a,stroke:#94a3b8,stroke-width:2px,color:#fff
+    style system fill:#2a2a2a,stroke:#94a3b8,stroke-width:2px,color:#fff
+    style games fill:#3a2a1a,stroke:#f59e0b,stroke-width:2px,color:#fff
     style CT420 fill:#2a1a2a,stroke:#a855f7,stroke-width:2px,color:#fff
+
 ```
 
 ---
@@ -97,7 +121,7 @@ graph TB
 | **CPU** | AMD Ryzen 5 1600 (6C/12T) |
 | **RAM** | 40 GB DDR4 |
 | **Boot** | ZFS NVMe mirror (root pool) |
-| **Storage** | 18 TB HDD <!-- TODO: add more detail if needed --> |
+| **Storage** | 18 TB HDD (media, backups) · SSD (databases, backup target) |
 | **Hypervisor** | Proxmox VE |
 | **Router** | MikroTik RB2011UiAS-2HnD-IN |
 | **Switch** | TP-Link TL-SG108E (managed) |
@@ -105,33 +129,40 @@ graph TB
 
 ---
 
-## -> Services 
+## -> Services
 
-35+ containers, each with its own Compose file. Grouped by function:
+40+ containers, each with its own Compose file:
 
-### Networking and Security
+### Network
 | Service | What it does |
 |---|---|
-| [Traefik](traefik/) | Reverse proxy with automatic TLS via Let's Encrypt |
-| [Authentik](authentik/) | SSO and identity provider - SAML, OAuth2, LDAP |
-| [CrowdSec](crowdsec/) | Collaborative IDS/IPS - behavioral threat detection |
-| [wg-easy](wg-easy/) | WireGuard VPN with a web UI |
-| [AdGuard Home](adguard/) | Network-wide DNS filtering and ad blocking |
+| [Traefik](traefik/) | Reverse proxy with automatic TLS via Cloudflare DNS challenge |
+| [Authentik](authentik/) | SSO — domain-level forward auth via Traefik for all services |
+| [CrowdSec](crowdsec/) | Collaborative IDS/IPS — behavioral threat detection |
+| [WireGuard](wg-easy/) | VPN with a web UI |
+| [AdGuard Home](adguard/) | Network-wide DNS filtering with `*.${BASE_DOMAIN}` rewrite |
+| [Vaultwarden](vaultwarden/) | Bitwarden-compatible password manager |
 
-### Monitoring and Observability
+### Monitoring
 | Service | What it does |
 |---|---|
-| [Grafana](grafana/) | Dashboards and visualization |
-| [Prometheus](prometheus/) | Metrics collection and alerting |
-| [Glances](glances/) | Real-time system monitoring |
-| [Scrutiny](scrutiny/) | S.M.A.R.T. disk health monitoring |
+| [Grafana](grafana/) | Dashboards — Node Exporter Full, cAdvisor, Traefik, AdGuard |
+| [Prometheus](prometheus/) | Metrics collection with cAdvisor and AdGuard exporter |
+| [Uptime Kuma](uptime-kuma/) | Uptime monitoring with AutoKuma auto-discovery from Docker labels |
+| [Glances](glances/) | Real-time system monitoring with host PID and filesystem visibility |
+| [Scrutiny](scrutiny/) | S.M.A.R.T. disk health monitoring (collector on Proxmox host) |
 | [MySpeed](myspeed/) | Internet speed tracking over time |
 
 ### Media
 | Service | What it does |
 |---|---|
-| [Jellyfin](jellyfin/) | Media server (movies, TV, music) |
-| [Jellyseer](jellyseer/) | Media request management |
+| [Jellyfin](jellyfin/) | Media server — dual-domain (`jellyfin.hexie.dev` + internal) |
+| [Jellyseerr](jellyseer/) | Media request management |
+| [MeTube](metubedl/) | YouTube video/audio downloader |
+
+### Arr Stack
+| Service | What it does |
+|---|---|
 | [Sonarr](sonarr/) | TV show automation |
 | [Sonarr-Anime](sonarr-anime/) | Anime-specific Sonarr instance |
 | [Radarr](radarr/) | Movie automation |
@@ -140,39 +171,135 @@ graph TB
 | [Profilarr](profilarr/) | Quality profile sync across *arr instances |
 | [qBittorrent](qbittorrent/) | Download client |
 | [FlareSolverr](flaresolverr/) | Cloudflare challenge solver for Prowlarr |
-| [MeTube](metubedl/) | YouTube video/audio downloader |
 
-### Apps and Productivity
+### Apps
 | Service | What it does |
 |---|---|
-| [Homepage](homepage/) | Dashboard - single pane of glass for all services |
+| [Homepage](homepage/) | Dashboard — single pane of glass for all services |
 | [Mealie](mealie/) | Recipe manager and meal planner |
+| [Paperless-ngx](paperless-ngx/) | Document management with OCR (English + Romanian) |
 | [Kiwix](kiwix/) | Offline Wikipedia and other ZIM archives |
 | [The Lounge](thelounge/) | Self-hosted IRC client |
 | [Copyparty](copyparty/) | File sharing and upload portal |
 
-### Infrastructure and Gaming
+### System
 | Service | What it does |
 |---|---|
 | [Portainer](portainer/) | Container management UI |
 | [Komodo](komodo/) | Container deployment and management |
-| [Frigate](frigate/) | NVR with real-time object detection (WebRTC/MSE) |
-| [Crafty](crafty/) | Minecraft server manager |
+| [Frigate](frigate/) | NVR with real-time object detection |
+| [btop](btop/) | Process viewer (web-based terminal) |
+| [ncdu](ncdu/) | Disk usage analyzer (web-based terminal) |
 
-### Utilities
-`btop` · `ncdu` - containerized CLI tools for monitoring and disk usage analysis.
+### Games
+| Service | What it does |
+|---|---|
+| [Crafty](crafty/) | Minecraft server manager (tModLoader) |
+| [Terraria](terraria/) | Terraria tModLoader server |
+
+### Headless
+| Service | What it does |
+|---|---|
+| [Discord Bot](discord-bot/) | Custom IP notification bot |
 
 ---
 
-## -> Security Posture
+## -> Compose Pattern
 
-Security isn't an afterthought here - it's baked into the stack:
+All services follow a standardized template:
 
-- **Traefik** handles TLS termination with auto-renewed Let's Encrypt certificates
-- **Authentik** provides SSO across services - no more password-per-app chaos
+```yaml
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.<service>-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  # ... HTTP → HTTPS redirect, TLS, certresolver
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  # ... icon, href, description, widgets
+
+x-kuma-labels: &kuma-template
+  kuma.<service>.http.name: ${HOMEPAGE_NAME}
+  kuma.<service>.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  # ... retries, interval
+
+services:
+  service:
+    container_name: ${APP_NAME}
+    image: image:${IMAGE_TAG:-latest}
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+```
+
+**Key patterns:**
+- YAML anchors for Traefik, Homepage, and Uptime Kuma labels
+- `.env` files with `APP_NAME`, `APP_PORT`, `BASE_DOMAIN`, `IMAGE_TAG`
+- Label keys are hardcoded (Docker Compose doesn't interpolate env vars in keys), values use `${VAR}`
+- Two Docker networks: `frontend` (Traefik-exposed) and `backend` (internal comms)
+- Multi-service stacks use additional anchors for shared environment variables
+
+---
+
+## -> Monitoring Stack
+
+```
+Proxmox Host                    Docker LXC
+┌──────────────┐    scrape     ┌──────────────────────────┐
+│ node_exporter├──────────────►│ Prometheus                │
+└──────────────┘               │  ├─ cAdvisor (containers) │
+                               │  ├─ Traefik metrics       │
+┌──────────────┐    push       │  └─ AdGuard exporter      │
+│ Scrutiny     ├──────────────►│                            │
+│ collector    │               │ Grafana ◄── Prometheus     │
+└──────────────┘               │                            │
+                               │ Uptime Kuma + AutoKuma     │
+                               │  └─ auto-discovers from    │
+                               │     Docker labels          │
+                               └──────────────────────────┘
+```
+
+- **Prometheus** scrapes node_exporter (Proxmox host), cAdvisor (container metrics), Traefik (request metrics), AdGuard exporter (DNS stats) at 60s intervals with 90-day retention
+- **Grafana** dashboards: Node Exporter Full (1860), cAdvisor (14282), Traefik (17346), AdGuard (13330)
+- **Uptime Kuma** monitors all services via HTTPS with Discord + email alerts
+- **AutoKuma** auto-discovers monitors from Docker container labels
+- **Scrutiny** collector runs on Proxmox host, ships SMART data to web UI in Docker
+
+---
+
+## -> Security
+
+- **Traefik** handles TLS termination with auto-renewed Let's Encrypt certificates (Cloudflare DNS challenge)
+- **Authentik** provides domain-level SSO via Traefik forward auth — one login protects all `*.${BASE_DOMAIN}` services
 - **CrowdSec** runs behavioral analysis and shares threat intelligence with the community blocklist
-- **WireGuard (wg-easy)** encrypts all remote access - nothing is exposed without the tunnel
-- **AdGuard Home** blocks malicious domains at the DNS level before they reach any client
+- **WireGuard** encrypts all remote access — nothing is exposed without the tunnel
+- **AdGuard Home** blocks malicious domains at the DNS level with local DNS rewrite for `*.${BASE_DOMAIN}`
+- **Vaultwarden** manages all credentials with Bitwarden-compatible clients
+
+---
+
+## -> Backups
+
+Daily automated backups to `/ssd/backups` with 14-day retention:
+
+| What | How |
+|---|---|
+| Vaultwarden | SQLite hot backup + RSA keys + attachments |
+| Authentik | `pg_dump` of PostgreSQL |
+| Immich | `pg_dump` of metadata database |
+| Komodo | `mongodump` compressed |
+| Scrutiny | SQLite copy |
+| Uptime Kuma | SQLite hot backup |
+| Paperless-ngx | Built-in document exporter |
+| AdGuard, Traefik, Prometheus, Grafana | Config files |
+| All `.env` files | Centralized secret backup |
+
+---
+
+## -> Email
+
+All transactional email flows through **Brevo SMTP** (`smtp-relay.brevo.com`), configured on:
+Authentik · Vaultwarden · Immich · Mealie · Grafana (alerts) · Paperless-ngx
 
 ---
 
@@ -184,12 +311,12 @@ The next major evolution: migrating from Docker Compose to **k3s** on Proxmox fo
 
 **Migration plan:**
 
-1. **Sandbox** - Spin up a k3s instance, learn `kubectl`, get comfortable
-2. **Foundation** - k3s with Longhorn (storage) + Traefik (ingress)
-3. **Stateless first** - Migrate simple services (Homepage, AdGuard, monitoring)
-4. **Media stack** - Migrate the *arr suite + Jellyfin
-5. **Stateful and heavy** - Immich, Frigate, game servers
-6. **GitOps** - FluxCD pointed at this repo for fully automated deployments
+1. **Sandbox** — Spin up a k3s instance, learn `kubectl`, get comfortable
+2. **Foundation** — k3s with Longhorn (storage) + Traefik (ingress)
+3. **Stateless first** — Migrate simple services (Homepage, AdGuard, monitoring)
+4. **Media stack** — Migrate the *arr suite + Jellyfin
+5. **Stateful and heavy** — Immich, Frigate, game servers
+6. **GitOps** — FluxCD pointed at this repo for fully automated deployments
 
 ---
 
@@ -197,14 +324,15 @@ The next major evolution: migrating from Docker Compose to **k3s** on Proxmox fo
 
 ```
 .
-├── .template/          # Boilerplate for new services
+├── .template/              # Boilerplate for new services
 ├── service-name/
-│   └── docker-compose.yml
-├── projects/           # Misc project files
+│   ├── docker-compose.yaml
+│   └── .env                # Secrets — gitignored
+├── projects/               # Misc project files
 └── README.md
 ```
 
-Each service directory contains at minimum a `docker-compose.yml`. Configs, env files, and secrets are `.gitignore`'d.
+Each service directory contains at minimum a `docker-compose.yaml`. Configs, `.env` files, and secrets are `.gitignore`'d.
 
 ---
 
@@ -215,12 +343,15 @@ Each service directory contains at minimum a `docker-compose.yml`. Configs, env 
 git clone https://github.com/hexiejexie/homelab.git
 cd homelab
 
-# Spin up a service
-cd traefik
+# Copy the template for a new service
+cp -r .template my-new-service
+cd my-new-service
+
+# Edit .env with your values, then deploy
 docker compose up -d
 ```
 
-> !! Most services expect a Traefik network and proper `.env` files. Check each service's compose file for required variables and networks. !!
+> Most services expect `frontend` and `backend` Docker networks and properly configured `.env` files. Check each service's compose file for required variables.
 
 ---
 
