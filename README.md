@@ -1,6 +1,6 @@
 # - Homelab -
 
-Self-hosted infrastructure running on Proxmox VE, fully containerized with Docker Compose. Each service lives in its own directory with a `docker-compose.yaml` and `.env` — clone, configure, deploy.
+Self-hosted infrastructure running on Proxmox VE, fully containerized with Docker Compose. Each service lives in its own directory with a `docker-compose.yaml` and `.env` - clone, configure, deploy.
 
 > **Why?** Because cloud subscriptions add up, self-hosting teaches you more in a weekend than a month of tutorials, and it's fun.
 
@@ -137,8 +137,8 @@ graph TB
 | Service | What it does |
 |---|---|
 | [Traefik](traefik/) | Reverse proxy with automatic TLS via Cloudflare DNS challenge |
-| [Authentik](authentik/) | SSO — domain-level forward auth via Traefik for all services |
-| [CrowdSec](crowdsec/) | Collaborative IDS/IPS — behavioral threat detection |
+| [Authentik](authentik/) | SSO - domain-level forward auth via Traefik for all services |
+| [CrowdSec](crowdsec/) | Collaborative IDS/IPS - behavioral threat detection |
 | [WireGuard](wg-easy/) | VPN with a web UI |
 | [AdGuard Home](adguard/) | Network-wide DNS filtering with `*.${BASE_DOMAIN}` rewrite |
 | [Vaultwarden](vaultwarden/) | Bitwarden-compatible password manager |
@@ -146,7 +146,7 @@ graph TB
 ### Monitoring
 | Service | What it does |
 |---|---|
-| [Grafana](grafana/) | Dashboards — Node Exporter Full, cAdvisor, Traefik, AdGuard |
+| [Grafana](grafana/) | Dashboards - Node Exporter Full, cAdvisor, Traefik, AdGuard |
 | [Prometheus](prometheus/) | Metrics collection with cAdvisor and AdGuard exporter |
 | [Uptime Kuma](uptime-kuma/) | Uptime monitoring with AutoKuma auto-discovery from Docker labels |
 | [Glances](glances/) | Real-time system monitoring with host PID and filesystem visibility |
@@ -156,7 +156,7 @@ graph TB
 ### Media
 | Service | What it does |
 |---|---|
-| [Jellyfin](jellyfin/) | Media server — dual-domain (`jellyfin.hexie.dev` + internal) |
+| [Jellyfin](jellyfin/) | Media server - dual-domain (`jellyfin.hexie.dev` + internal) |
 | [Jellyseerr](jellyseer/) | Media request management |
 | [MeTube](metubedl/) | YouTube video/audio downloader |
 
@@ -175,7 +175,7 @@ graph TB
 ### Apps
 | Service | What it does |
 |---|---|
-| [Homepage](homepage/) | Dashboard — single pane of glass for all services |
+| [Homepage](homepage/) | Dashboard - single pane of glass for all services |
 | [Mealie](mealie/) | Recipe manager and meal planner |
 | [Paperless-ngx](paperless-ngx/) | Document management with OCR (English + Romanian) |
 | [Kiwix](kiwix/) | Offline Wikipedia and other ZIM archives |
@@ -246,16 +246,16 @@ services:
 ```
 Proxmox Host                    Docker LXC
 ┌──────────────┐    scrape     ┌──────────────────────────┐
-│ node_exporter├──────────────►│ Prometheus                │
-└──────────────┘               │  ├─ cAdvisor (containers) │
-                               │  ├─ Traefik metrics       │
-┌──────────────┐    push       │  └─ AdGuard exporter      │
-│ Scrutiny     ├──────────────►│                            │
-│ collector    │               │ Grafana ◄── Prometheus     │
-└──────────────┘               │                            │
-                               │ Uptime Kuma + AutoKuma     │
-                               │  └─ auto-discovers from    │
-                               │     Docker labels          │
+│ node_exporter├──────────────►│ Prometheus               │
+└──────────────┘               │  ├─ cAdvisor (containers)│
+                               │  ├─ Traefik metrics      │
+┌──────────────┐    push       │  └─ AdGuard exporter  |  │
+│ Scrutiny     ├──────────────►│                       v  │
+│ collector    │               │ Grafana ◄── Prometheus   │
+└──────────────┘               │                          │
+                               │ Uptime Kuma + AutoKuma   │
+                               │  └─ auto-discovers from  │
+                               │     Docker labels        │
                                └──────────────────────────┘
 ```
 
@@ -270,9 +270,9 @@ Proxmox Host                    Docker LXC
 ## -> Security
 
 - **Traefik** handles TLS termination with auto-renewed Let's Encrypt certificates (Cloudflare DNS challenge)
-- **Authentik** provides domain-level SSO via Traefik forward auth — one login protects all `*.${BASE_DOMAIN}` services
+- **Authentik** provides domain-level SSO via Traefik forward auth - one login protects all `*.${BASE_DOMAIN}` services
 - **CrowdSec** runs behavioral analysis and shares threat intelligence with the community blocklist
-- **WireGuard** encrypts all remote access — nothing is exposed without the tunnel
+- **WireGuard** encrypts all remote access - nothing is exposed without the tunnel
 - **AdGuard Home** blocks malicious domains at the DNS level with local DNS rewrite for `*.${BASE_DOMAIN}`
 - **Vaultwarden** manages all credentials with Bitwarden-compatible clients
 
@@ -311,12 +311,12 @@ The next major evolution: migrating from Docker Compose to **k3s** on Proxmox fo
 
 **Migration plan:**
 
-1. **Sandbox** — Spin up a k3s instance, learn `kubectl`, get comfortable
-2. **Foundation** — k3s with Longhorn (storage) + Traefik (ingress)
-3. **Stateless first** — Migrate simple services (Homepage, AdGuard, monitoring)
-4. **Media stack** — Migrate the *arr suite + Jellyfin
-5. **Stateful and heavy** — Immich, Frigate, game servers
-6. **GitOps** — FluxCD pointed at this repo for fully automated deployments
+1. **Sandbox** - Spin up a k3s instance, learn `kubectl`, get comfortable
+2. **Foundation** - k3s with Longhorn (storage) + Traefik (ingress)
+3. **Stateless first** - Migrate simple services (Homepage, AdGuard, monitoring)
+4. **Media stack** - Migrate the *arr suite + Jellyfin
+5. **Stateful and heavy** - Immich, Frigate, game servers
+6. **GitOps** - FluxCD pointed at this repo for fully automated deployments
 
 ---
 
@@ -327,7 +327,7 @@ The next major evolution: migrating from Docker Compose to **k3s** on Proxmox fo
 ├── .template/              # Boilerplate for new services
 ├── service-name/
 │   ├── docker-compose.yaml
-│   └── .env                # Secrets — gitignored
+│   └── .env                # Secrets - gitignored
 ├── projects/               # Misc project files
 └── README.md
 ```
@@ -357,4 +357,4 @@ docker compose up -d
 
 ## -> License
 
-This is a personal homelab config repo. Feel free to use it as reference or inspiration for your own setup.
+This is a personal homelab config repo. Feel free to use it as reference or inspiration for your own setup!
