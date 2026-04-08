@@ -1,0 +1,91 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.loki-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.loki-http.entrypoints: web
+  traefik.http.routers.loki-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.loki-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.loki-https.entrypoints: websecure
+  traefik.http.routers.loki-https.tls: true
+  traefik.http.routers.loki-https.tls.certresolver: cloudflare
+  traefik.http.routers.loki-https.service: ${APP_NAME}
+  traefik.http.services.loki.loadbalancer.server.port: ${APP_PORT}
+
+x-alloy-traefik-labels: &alloy-traefik-template
+  traefik.enable: true
+  traefik.http.routers.alloy-http.rule: Host(`alloy.${BASE_DOMAIN}`)
+  traefik.http.routers.alloy-http.entrypoints: web
+  traefik.http.routers.alloy-http.middlewares: redirect-to-https
+  traefik.http.routers.alloy-https.rule: Host(`alloy.${BASE_DOMAIN}`)
+  traefik.http.routers.alloy-https.entrypoints: websecure
+  traefik.http.routers.alloy-https.tls: true
+  traefik.http.routers.alloy-https.tls.certresolver: cloudflare
+  traefik.http.routers.alloy-https.service: alloy
+  traefik.http.services.alloy.loadbalancer.server.port: ${ALLOY_PORT}
+
+x-alloy-homepage-labels: &alloy-homepage-template
+  homepage.group: Monitoring
+  homepage.name: Alloy
+  homepage.icon: si-grafana
+  homepage.href: https://alloy.${BASE_DOMAIN}
+  homepage.description: log collector
+
+x-alloy-kuma-labels: &alloy-kuma-template
+  kuma.alloy.http.name: Alloy
+  kuma.alloy.http.url: https://alloy.${BASE_DOMAIN}
+  kuma.alloy.http.max_retries: 3
+  kuma.alloy.http.interval: 60
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.loki.http.name: ${HOMEPAGE_NAME}
+  kuma.loki.http.url: https://${APP_NAME}.${BASE_DOMAIN}/ready
+  kuma.loki.http.max_retries: 3
+  kuma.loki.http.interval: 60
+
+services:
+  loki:
+    container_name: ${APP_NAME}
+    image: grafana/loki:${IMAGE_TAG:-3.5.0}
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yaml
+    volumes:
+      - ./config/loki.yaml:/etc/loki/loki.yaml:ro
+      - ./data:/loki
+    networks:
+      - frontend
+      - backend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+  alloy:
+    container_name: alloy
+    image: grafana/alloy:${ALLOY_TAG:-v1.5.0}
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./config/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy-data:/var/lib/alloy/data
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - frontend
+      - backend
+    labels:
+      <<: [*alloy-traefik-template, *alloy-homepage-template, *alloy-kuma-template]
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
