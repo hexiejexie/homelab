@@ -1,0 +1,47 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.open-webui-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.open-webui-http.entrypoints: web
+  traefik.http.routers.open-webui-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.open-webui-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.open-webui-https.entrypoints: websecure
+  traefik.http.routers.open-webui-https.tls: true
+  traefik.http.routers.open-webui-https.tls.certresolver: cloudflare
+  traefik.http.routers.open-webui-https.service: ${APP_NAME}
+  traefik.http.services.open-webui.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.open-webui.http.name: ${HOMEPAGE_NAME}
+  kuma.open-webui.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.open-webui.http.max_retries: 3
+  kuma.open-webui.http.interval: 60
+
+services:
+  open-webui:
+    container_name: ${APP_NAME}
+    image: ghcr.io/open-webui/open-webui:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data:/app/backend/data
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
