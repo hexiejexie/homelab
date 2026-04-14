@@ -1,10 +1,11 @@
 services:
-  discord-bot:
-    container_name: ${APP_NAME}
-    image: hexiejexie/discord-ip-bot:${IMAGE_TAG:-latest}
+  botty:
+    image: ghcr.io/hexiejexie/botty-discord:latest
+    container_name: botty
     restart: unless-stopped
-    environment:
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
-      COMMAND: "!showip"
-    volumes:
-      - ./data:/app/data
+    env_file:
+      - .env
+    # Build from the local Dockerfile when running `docker compose up --build` for testing.
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
