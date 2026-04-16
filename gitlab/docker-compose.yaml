@@ -1,0 +1,92 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.gitlab-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.gitlab-http.entrypoints: web
+  traefik.http.routers.gitlab-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.gitlab-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.gitlab-https.entrypoints: websecure
+  traefik.http.routers.gitlab-https.tls: true
+  traefik.http.routers.gitlab-https.tls.certresolver: cloudflare
+  traefik.http.routers.gitlab-https.service: ${APP_NAME}
+  traefik.http.services.gitlab.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.gitlab.http.name: ${HOMEPAGE_NAME}
+  kuma.gitlab.http.url: https://${APP_NAME}.${BASE_DOMAIN}/-/health
+  kuma.gitlab.http.max_retries: 3
+  kuma.gitlab.http.interval: 60
+  
+services:
+  gitlab:
+    container_name: ${APP_NAME}
+    image: gitlab/gitlab-ce:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    hostname: ${APP_NAME}.${BASE_DOMAIN}
+    shm_size: 512m
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://${APP_NAME}.${BASE_DOMAIN}'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = {
+          'X-Forwarded-Proto' => 'https',
+          'X-Forwarded-Ssl'   => 'on',
+          'Host'              => '${APP_NAME}.${BASE_DOMAIN}'
+        }
+        letsencrypt['enable'] = false
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = '${SMTP_HOST}'
+        gitlab_rails['smtp_port'] = ${SMTP_PORT}
+        gitlab_rails['smtp_user_name'] = '${SMTP_USERNAME}'
+        gitlab_rails['smtp_password'] = '${SMTP_PASSWORD}'
+        gitlab_rails['smtp_domain'] = 'hexie.dev'
+        gitlab_rails['smtp_authentication'] = 'login'
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = false
+        gitlab_rails['gitlab_email_from'] = '${SMTP_FROM}'
+        gitlab_rails['gitlab_email_reply_to'] = '${SMTP_FROM}'
+        prometheus_monitoring['enable'] = false
+        gitlab_rails['backup_keep_time'] = 604800
+    ports:
+      - "2222:22"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/etc/gitlab
+      - ./logs:/var/log/gitlab
+      - ./data:/var/opt/gitlab
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost/-/health || exit 1"]
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 6m
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+  gitlab-runner:
+    container_name: ${APP_NAME}-runner
+    image: gitlab/gitlab-runner:latest
+    restart: unless-stopped
+    depends_on:
+      - gitlab
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./runner-config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    external: true
