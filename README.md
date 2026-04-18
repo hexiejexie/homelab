@@ -60,7 +60,7 @@ graph TB
 
             subgraph media["Media"]
                 JELLYFIN[Jellyfin]
-                JELLYSEER[Jellyseerr]
+                seerr[seerrr]
                 METUBE[MeTube]
             end
 
@@ -71,6 +71,8 @@ graph TB
                 KIWIX[Kiwix]
                 THELOUNGE[The Lounge]
                 COPYPARTY[Copyparty]
+                CONVERTX[ConvertX]
+                OPENWEBUI[Open Web UI]
             end
 
             subgraph system["System"]
@@ -157,7 +159,7 @@ graph TB
 | Service | What it does |
 |---|---|
 | [Jellyfin](jellyfin/) | Media server - dual-domain (`jellyfin.hexie.dev` + internal) |
-| [Jellyseerr](jellyseer/) | Media request management |
+| [seerrr](seerr/) | Media request management |
 | [MeTube](metubedl/) | YouTube video/audio downloader |
 
 ### Arr Stack
@@ -181,6 +183,8 @@ graph TB
 | [Kiwix](kiwix/) | Offline Wikipedia and other ZIM archives |
 | [The Lounge](thelounge/) | Self-hosted IRC client |
 | [Copyparty](copyparty/) | File sharing and upload portal |
+| [ConvertX](convertx/) | Convert any file |
+| [Open Web UI](open-webui/) | Web UI for self hosted ML Models |
 
 ### System
 | Service | What it does |
