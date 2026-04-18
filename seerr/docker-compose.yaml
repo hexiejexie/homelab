@@ -1,0 +1,52 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.seerr-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.seerr-http.entrypoints: web
+  traefik.http.routers.seerr-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.seerr-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.seerr-https.entrypoints: websecure
+  traefik.http.routers.seerr-https.tls: true
+  traefik.http.routers.seerr-https.tls.certresolver: cloudflare
+  traefik.http.routers.seerr-https.service: ${APP_NAME}
+  traefik.http.services.seerr.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+  homepage.widget.type: seerr
+  homepage.widget.url: http://${APP_NAME}:${APP_PORT}
+  homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
+
+x-kuma-labels: &kuma-template
+  kuma.seerr.http.name: ${HOMEPAGE_NAME}
+  kuma.seerr.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.seerr.http.max_retries: 3
+  kuma.seerr.http.interval: 60
+
+services:
+  seerr:
+    container_name: ${APP_NAME}
+    image: ghcr.io/seerr-team/seerr:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    user: "0:0"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ./config:/app/config
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
