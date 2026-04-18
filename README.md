@@ -62,6 +62,7 @@ graph TB
                 JELLYFIN[Jellyfin]
                 seerr[seerrr]
                 METUBE[MeTube]
+                IMMICH[Immich]
             end
 
             subgraph apps["Apps"]
@@ -161,6 +162,7 @@ graph TB
 | [Jellyfin](jellyfin/) | Media server - dual-domain (`jellyfin.hexie.dev` + internal) |
 | [seerrr](seerr/) | Media request management |
 | [MeTube](metubedl/) | YouTube video/audio downloader |
+| [Immich](immich/) | Photo and video backup, google photos replacer |
 
 ### Arr Stack
 | Service | What it does |
