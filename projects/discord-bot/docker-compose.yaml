@@ -1,11 +1,43 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.botty-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.botty-http.entrypoints: web
+  traefik.http.routers.botty-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.botty-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.botty-https.entrypoints: websecure
+  traefik.http.routers.botty-https.tls: true
+  traefik.http.routers.botty-https.tls.certresolver: cloudflare
+  traefik.http.routers.botty-https.service: ${APP_NAME}
+  traefik.http.services.botty.loadbalancer.server.port: ${APP_PORT}
+  traefik.http.routers.botty-https.middlewares: authentik #proxy auth just in case
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.botty.http.name: ${HOMEPAGE_NAME}
+  kuma.botty.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.botty.http.max_retries: 3
+  kuma.botty.http.interval: 60
+
+
 services:
   botty:
-    image: ghcr.io/hexiejexie/botty-discord:latest
+    image: ghcr.io/hexiejexie/botty-discord:${IMAGE_TAG:-v0.2.0}
     container_name: botty
     restart: unless-stopped
     env_file:
       - .env
-    # Build from the local Dockerfile when running `docker compose up --build` for testing.
-    #build:
-    #  context: .
-    #  dockerfile: Dockerfile
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
