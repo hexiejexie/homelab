@@ -317,7 +317,7 @@ The next major evolution: migrating from Docker Compose to **k3s** on Proxmox fo
 
 **Migration plan:**
 
-1. **Sandbox** - Spin up a k3s instance, learn `kubectl`, get comfortable
+1. **Sandbox** - Spin up a kubernetes instance, learn `kubectl`, get comfortable
 2. **Foundation** - k3s with Longhorn (storage) + Traefik (ingress)
 3. **Stateless first** - Migrate simple services (Homepage, AdGuard, monitoring)
 4. **Media stack** - Migrate the *arr suite + Jellyfin
