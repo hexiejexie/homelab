@@ -35,6 +35,12 @@ services:
     container_name: mongo-komodo
     image: mongo:${MONGO_TAG:-8}
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
     command: --quiet --wiredTigerCacheSizeGB 0.25
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
