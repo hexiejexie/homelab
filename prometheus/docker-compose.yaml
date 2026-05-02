@@ -24,6 +24,15 @@ x-kuma-labels: &kuma-template
   kuma.prometheus.http.max_retries: 3
   kuma.prometheus.http.interval: 60
 
+x-cadvisor-cmd: &cadvisor-cmd
+  - --housekeeping_interval=30s
+  - --max_housekeeping_interval=60s
+  - --event_storage_event_limit=default=0
+  - --event_storage_age_limit=default=0
+  - --disable_metrics=disk,diskIO,percpu,sched,process,hugetlb,referenced_memory,cpu_topology,resctrl,memory_numa,tcp,udp,advtcp,app
+  - --docker_only=true
+  - --store_container_labels=false
+
 services:
   prometheus:
     container_name: ${APP_NAME}
@@ -56,6 +65,8 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
       - backend
+    command: *cadvisor-cmd
+
   adguard-exporter:
     container_name: adguard-exporter
     image: ghcr.io/henrywhitaker3/adguard-exporter:${ADGUARD_EXPORTER_TAG:-latest}
