@@ -30,6 +30,12 @@ services:
     image: ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-latest}
     restart: unless-stopped
     shm_size: 512mb
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    group_add:
+      - "992"   
+    environment:
+      - LIBVA_DRIVER_NAME=radeonsi
     ports:
       - 1984:1984
       - 8554:8554
