@@ -46,7 +46,6 @@ services:
       - "992"
     volumes:
       - ./config:/config
-      - ./cache:/cache
       - /18tb/media:/data
       - /mnt/disks/ssd-448gb/transcode-cache/jellyfin/cache:/cache
     networks:
