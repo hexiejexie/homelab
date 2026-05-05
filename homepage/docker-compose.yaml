@@ -30,7 +30,9 @@ services:
     volumes:
       - .:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /18tb:/storage
+      - /18tb:/18tb:ro
+      - /mnt/disks/scratch-12tb:/mnt/disks/scratch-12tb:ro
+      - /mnt/disks/ssd-448gb:/mnt/disks/ssd-448gb:ro
     networks:
       - frontend
     labels:
