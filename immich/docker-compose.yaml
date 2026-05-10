@@ -50,10 +50,11 @@ services:
       - "44"
       - "992"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /18tb/immich/upload:/usr/src/app/upload
       - /18tb/Backup:/archive
-      - /etc/localtime:/etc/localtime:ro
+      - /18tb/immich/data:/data
     networks:
       - frontend
       - backend
