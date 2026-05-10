@@ -1,0 +1,47 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.homeassistant-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.homeassistant-http.entrypoints: web
+  traefik.http.routers.homeassistant-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.homeassistant-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.homeassistant-https.entrypoints: websecure
+  traefik.http.routers.homeassistant-https.tls: true
+  traefik.http.routers.homeassistant-https.tls.certresolver: cloudflare
+  traefik.http.routers.homeassistant-https.service: ${APP_NAME}
+  traefik.http.services.homeassistant.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.homeassistant.http.name: ${HOMEPAGE_NAME}
+  kuma.homeassistant.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.homeassistant.http.max_retries: 3
+  kuma.homeassistant.http.interval: 60
+
+services:
+  homeassistant:
+    container_name: ${APP_NAME}
+    image: ghcr.io/home-assistant/home-assistant:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/config
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
