@@ -43,6 +43,7 @@ services:
       GF_SMTP_STARTTLS_POLICY: ${SMTP_SECURITY}
       GF_ANALYTICS_REPORTING_ENABLED: false
       GF_ANALYTICS_CHECK_FOR_UPDATES: false
+      GF_PLUGINS_REPORTING_ENABLED: false
     volumes:
       - ./grafana_storage:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning:ro
