@@ -45,6 +45,8 @@ services:
       - /apps/copyparty:/cfg:z
       - /18tb/Backup:/18tb:z
       - /apps:/apps:z
+      - /mnt/disks/scratch-12tb:/scratch:z
+      - /mnt/disks/ssd-448gb:/ssd-448gb:z
     networks:
       - frontend
     labels:
