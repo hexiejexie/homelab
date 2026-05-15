@@ -1,0 +1,48 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.excalidraw-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.excalidraw-http.entrypoints: web
+  traefik.http.routers.excalidraw-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.excalidraw-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.excalidraw-https.entrypoints: websecure
+  traefik.http.routers.excalidraw-https.tls: true
+  traefik.http.routers.excalidraw-https.tls.certresolver: cloudflare
+  traefik.http.routers.excalidraw-https.service: ${APP_NAME}
+  traefik.http.services.excalidraw.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.excalidraw.http.name: ${HOMEPAGE_NAME}
+  kuma.excalidraw.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.excalidraw.http.max_retries: 3
+  kuma.excalidraw.http.interval: 60
+
+services:
+  excalidraw:
+    container_name: ${APP_NAME}
+    image: excalidraw/excalidraw:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/config
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+
+networks:
+  frontend:
+    external: true

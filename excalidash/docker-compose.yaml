@@ -1,0 +1,100 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.excalidash-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.excalidash-http.entrypoints: web
+  traefik.http.routers.excalidash-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.excalidash-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.excalidash-https.entrypoints: websecure
+  traefik.http.routers.excalidash-https.tls: true
+  traefik.http.routers.excalidash-https.tls.certresolver: cloudflare
+  traefik.http.routers.excalidash-https.service: ${APP_NAME}
+  traefik.http.services.excalidash.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.excalidash.http.name: ${HOMEPAGE_NAME}
+  kuma.excalidash.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.excalidash.http.max_retries: 3
+  kuma.excalidash.http.interval: 60
+
+services:
+  excalidash-backend:
+    container_name: ${APP_NAME}-backend
+    image: zimengxiong/excalidash-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:8000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./backend-data:/app/prisma
+    networks:
+      - frontend
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
+      - PORT=8000
+      - NODE_ENV=production
+      - AUTH_MODE=${AUTH_MODE:-local}
+      # Keep disabled by default; only enable when a trusted proxy sanitizes forwarded headers.
+      - TRUST_PROXY=false
+      # Optional for single-instance deployments:
+      # if unset, backend auto-generates and persists one in the volume.
+      # Recommended to set explicitly for portability and multi-instance setups.
+      - JWT_SECRET=${JWT_SECRET}
+      - CSRF_SECRET=${CSRF_SECRET}
+      # Optional OIDC settings (required for AUTH_MODE=hybrid or oidc_enforced)
+      # - OIDC_PROVIDER_NAME=Authentik
+      # - OIDC_ISSUER_URL=https://auth.example.com/application/o/excalidash/
+      # - OIDC_CLIENT_ID=your-client-id
+      # - OIDC_CLIENT_SECRET=your-client-secret
+      # - OIDC_REDIRECT_URI=https://excalidash.example.com/api/auth/oidc/callback
+
+  excalidash:
+    container_name: ${APP_NAME}
+    image: zimengxiong/excalidash-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:80",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - ${APP_NAME}-backend   
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - frontend
+    environment:
+      - BACKEND_URL=${APP_NAME}-backend:8000
+      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+
+networks:
+  frontend:
+    external: true
