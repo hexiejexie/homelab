@@ -1,0 +1,49 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.qui-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.qui-http.entrypoints: web
+  traefik.http.routers.qui-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.qui-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.qui-https.entrypoints: websecure
+  traefik.http.routers.qui-https.tls: true
+  traefik.http.routers.qui-https.tls.certresolver: cloudflare
+  traefik.http.routers.qui-https.service: ${APP_NAME}
+  traefik.http.services.qui.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.qui.http.name: ${HOMEPAGE_NAME}
+  kuma.qui.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.qui.http.max_retries: 3
+  kuma.qui.http.interval: 60
+
+services:
+  qui:
+    container_name: ${APP_NAME}
+    image: ghcr.io/autobrr/qui:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/config
+      - /18tb/media:/data
+      - /18tb/kiwix/zim:/kiwix/zim
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
