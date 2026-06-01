@@ -1,0 +1,53 @@
+x-traefik-labels: &traefik-template
+  traefik.enable: true
+  traefik.http.routers.calibre-web-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.calibre-web-http.entrypoints: web
+  traefik.http.routers.calibre-web-http.middlewares: redirect-to-https
+  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+  traefik.http.routers.calibre-web-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  traefik.http.routers.calibre-web-https.entrypoints: websecure
+  traefik.http.routers.calibre-web-https.tls: true
+  traefik.http.routers.calibre-web-https.tls.certresolver: cloudflare
+  traefik.http.routers.calibre-web-https.service: ${APP_NAME}
+  traefik.http.services.calibre-web.loadbalancer.server.port: ${APP_PORT}
+
+x-homepage-labels: &homepage-template
+  homepage.group: ${HOMEPAGE_GROUP}
+  homepage.name: ${HOMEPAGE_NAME}
+  homepage.icon: ${HOMEPAGE_ICON}
+  homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
+  homepage.description: ${HOMEPAGE_DESCRIPTION}
+
+x-kuma-labels: &kuma-template
+  kuma.calibre-web.http.name: ${HOMEPAGE_NAME}
+  kuma.calibre-web.http.url: https://${APP_NAME}.${BASE_DOMAIN}
+  kuma.calibre-web.http.max_retries: 3
+  kuma.calibre-web.http.interval: 60
+
+services:
+  calibre-web:
+    container_name: ${APP_NAME}
+    image: lscr.io/linuxserver/calibre-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - PUID=0
+      - PGID=0
+      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/config
+      - /18tb//media/books:/books
+    networks:
+      - frontend
+    labels:
+      <<: [*traefik-template, *homepage-template, *kuma-template]
+
+networks:
+  frontend:
+    external: true
