@@ -23,6 +23,7 @@ x-homepage-labels: &homepage-template
   homepage.widget.enableBlocks: true
   homepage.widget.enableNowPlaying: true
   homepage.widget.enableUser: true
+  homepage.widget.version: 2
   homepage.widget.enableMediaControl: false
   homepage.widget.showEpisodeNumber: true
   homepage.widget.expandOneStreamToTwoRows: false
