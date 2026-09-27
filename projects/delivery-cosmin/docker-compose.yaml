@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
+    # webapp.py hardcodes app.run(debug=True); flask run skips that and keeps the debugger off
+    command: ["python", "-m", "flask", "--app", "webapp", "run", "--host", "0.0.0.0", "--port", "${APP_PORT}"]
     healthcheck:
       test: ["CMD", "python3", "-c", "import ssl,urllib.request as u; u.urlopen('http://localhost:${APP_PORT}/', context=ssl._create_unverified_context(), timeout=5)"]
       interval: 1m30s
