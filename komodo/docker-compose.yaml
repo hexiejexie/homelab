@@ -29,7 +29,7 @@ x-kuma-labels: &kuma-template
 services:
   mongo-komodo:
     container_name: mongo-komodo
-    image: mongo:${MONGO_TAG:-8}
+    image: mongo:${MONGO_TAG:-8.0}
     restart: unless-stopped
     deploy:
       resources:
