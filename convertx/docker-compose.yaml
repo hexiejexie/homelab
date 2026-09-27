@@ -32,7 +32,7 @@ services:
       retries: 3
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
-      JWT_SECRET: ${JWT_SECRET:-$(openssl rand -hex 32)}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
       ACCOUNT_REGISTRATION: false
       LANGUAGE: en
     volumes:
