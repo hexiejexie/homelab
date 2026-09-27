@@ -1,0 +1,16 @@
+services:
+  watchtower:
+    container_name: ${APP_NAME}
+    image: ghcr.io/nicholas-fedor/watchtower:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      # six-field cron (seconds first): every day at 04:00
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      # to get update notifications, set WATCHTOWER_NOTIFICATION_URL in .env
+      # (shoutrrr format, e.g. discord://token@webhookid) and uncomment:
+      # WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
