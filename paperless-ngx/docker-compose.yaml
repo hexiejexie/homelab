@@ -31,6 +31,7 @@ services:
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
       PAPERLESS_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:?set PAPERLESS_SECRET_KEY in .env}
       PAPERLESS_REDIS: redis://paperless-redis:6379
       PAPERLESS_DBENGINE: sqlite
       PAPERLESS_OCR_LANGUAGE: eng+ron
