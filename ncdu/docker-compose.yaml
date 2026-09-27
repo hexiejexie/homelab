@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.ncdu-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.ncdu-http.entrypoints: web
-  traefik.http.routers.ncdu-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.ncdu-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.ncdu-https.entrypoints: websecure
   traefik.http.routers.ncdu-https.tls: true

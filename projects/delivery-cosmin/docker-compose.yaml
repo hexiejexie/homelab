@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.delivery-cosmin-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`) || Host(`delivery.hexie.dev`)
-  traefik.http.routers.delivery-cosmin-http.entrypoints: web
-  traefik.http.routers.delivery-cosmin-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.delivery-cosmin-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`) || Host(`delivery.hexie.dev`)
   traefik.http.routers.delivery-cosmin-https.entrypoints: websecure
   traefik.http.routers.delivery-cosmin-https.tls: true

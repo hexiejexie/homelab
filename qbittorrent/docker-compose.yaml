@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.qbittorrent-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.qbittorrent-http.entrypoints: web
-  traefik.http.routers.qbittorrent-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.qbittorrent-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-https.entrypoints: websecure
   traefik.http.routers.qbittorrent-https.tls: true

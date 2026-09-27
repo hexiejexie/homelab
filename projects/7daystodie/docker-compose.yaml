@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.7daystodie-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.7daystodie-http.entrypoints: web
-  traefik.http.routers.7daystodie-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.7daystodie-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.7daystodie-https.entrypoints: websecure
   traefik.http.routers.7daystodie-https.tls: true

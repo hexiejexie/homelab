@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.frigate-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.frigate-http.entrypoints: web
-  traefik.http.routers.frigate-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.frigate-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.frigate-https.entrypoints: websecure
   traefik.http.routers.frigate-https.tls: true
