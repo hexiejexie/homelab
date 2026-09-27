@@ -8,7 +8,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.radarr-https.entrypoints: websecure
   traefik.http.routers.radarr-https.tls: true
   traefik.http.routers.radarr-https.tls.certresolver: cloudflare
-  traefik.http.routers.radarr-https.service: radarr
+  traefik.http.routers.radarr-https.service: ${APP_NAME}
   traefik.http.services.radarr.loadbalancer.server.port: ${APP_PORT}
 
 x-homepage-labels: &homepage-template
@@ -17,7 +17,7 @@ x-homepage-labels: &homepage-template
   homepage.icon: ${HOMEPAGE_ICON}
   homepage.href: https://${APP_NAME}.${BASE_DOMAIN}
   homepage.description: ${HOMEPAGE_DESCRIPTION}
-  homepage.widget.type: ${APP_NAME}
+  homepage.widget.type: radarr
   homepage.widget.url: http://${APP_NAME}:${APP_PORT}
   homepage.widget.key: ${HOMEPAGE_WIDGET_KEY}
 

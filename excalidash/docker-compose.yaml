@@ -83,7 +83,7 @@ services:
       timeout: 10s
       retries: 3
     depends_on:
-      - ${APP_NAME}-backend   
+      - excalidash-backend
     networks:
       - frontend
     environment:
