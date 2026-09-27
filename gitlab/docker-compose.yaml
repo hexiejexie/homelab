@@ -16,7 +16,7 @@ x-homepage-labels: &homepage-template
 
 x-kuma-labels: &kuma-template
   kuma.gitlab.http.name: ${HOMEPAGE_NAME}
-  kuma.gitlab.http.url: https://${APP_NAME}.${BASE_DOMAIN}/-/health
+  kuma.gitlab.http.url: https://${APP_NAME}.${BASE_DOMAIN}/users/sign_in
   kuma.gitlab.http.max_retries: 3
   kuma.gitlab.http.interval: 60
   
