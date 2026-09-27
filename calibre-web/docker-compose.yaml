@@ -35,10 +35,10 @@ services:
       timeout: 10s
       retries: 3
     environment:
-      - PUID=0
-      - PGID=0
-      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
-      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+      PUID: "0"
+      PGID: "0"
+      DOCKER_MODS: linuxserver/mods:universal-calibre #optional
+      OAUTHLIB_RELAX_TOKEN_SCOPE: "1" #optional
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./config:/config

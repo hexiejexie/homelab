@@ -35,7 +35,7 @@ services:
     group_add:
       - "992"   
     environment:
-      - LIBVA_DRIVER_NAME=radeonsi
+      LIBVA_DRIVER_NAME: radeonsi
     ports:
       - 1984:1984
       - 8554:8554

@@ -35,8 +35,8 @@ services:
     image: lscr.io/linuxserver/prowlarr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=0
-      - PGID=0
+      PUID: "0"
+      PGID: "0"
     volumes:
       - ./prowlarr:/config
     networks:

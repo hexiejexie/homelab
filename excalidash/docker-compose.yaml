@@ -46,18 +46,18 @@ services:
     networks:
       - frontend
     environment:
-      - DATABASE_URL=file:/app/prisma/dev.db
-      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
-      - PORT=8000
-      - NODE_ENV=production
-      - AUTH_MODE=${AUTH_MODE:-local}
+      DATABASE_URL: file:/app/prisma/dev.db
+      FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      PORT: "8000"
+      NODE_ENV: production
+      AUTH_MODE: ${AUTH_MODE:-local}
       # Keep disabled by default; only enable when a trusted proxy sanitizes forwarded headers.
-      - TRUST_PROXY=false
+      TRUST_PROXY: "false"
       # Optional for single-instance deployments:
       # if unset, backend auto-generates and persists one in the volume.
       # Recommended to set explicitly for portability and multi-instance setups.
-      - JWT_SECRET=${JWT_SECRET}
-      - CSRF_SECRET=${CSRF_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      CSRF_SECRET: ${CSRF_SECRET}
       # Optional OIDC settings (required for AUTH_MODE=hybrid or oidc_enforced)
       # - OIDC_PROVIDER_NAME=Authentik
       # - OIDC_ISSUER_URL=https://auth.example.com/application/o/excalidash/
@@ -89,8 +89,8 @@ services:
     networks:
       - frontend
     environment:
-      - BACKEND_URL=${APP_NAME}-backend:8000
-      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
+      BACKEND_URL: ${APP_NAME}-backend:8000
+      FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
     labels:
       <<: [*traefik-template, *homepage-template, *kuma-template]
 

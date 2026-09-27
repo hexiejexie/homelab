@@ -35,8 +35,8 @@ services:
       timeout: 10s
       retries: 3
     environment:
-      - PUID=0
-      - PGID=0
+      PUID: "0"
+      PGID: "0"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /18tb/media/books:/config

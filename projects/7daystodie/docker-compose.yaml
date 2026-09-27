@@ -26,11 +26,11 @@ services:
     image: vinanrra/7dtd-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=1000
-      - PGID=1000
-      - VERSION=stable   
-      - TimeZone=Europe/Amsterdam
-      - START_MODE=1
+      PUID: "1000"
+      PGID: "1000"
+      VERSION: stable
+      TimeZone: Europe/Amsterdam
+      START_MODE: "1"
     volumes:
       - ./config:/home/sdtdserver/serverfiles/
       - ./log:/home/sdtdserver/log/

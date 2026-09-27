@@ -32,8 +32,8 @@ services:
     image: lscr.io/linuxserver/thelounge:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=1000 
-      - PGID=1000
+      PUID: "1000"
+      PGID: "1000"
     volumes:
       - ./config:/config
     networks:

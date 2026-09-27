@@ -32,11 +32,11 @@ services:
     image: alexta69/metube:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - DEFAULT_THEME=dark
-      - DELETE_FILE_ON_TRASHCAN=true
-      - GID=1000
-      - UID=1000
-      - URL_PREFIX=/metube
+      DEFAULT_THEME: dark
+      DELETE_FILE_ON_TRASHCAN: "true"
+      GID: "1000"
+      UID: "1000"
+      URL_PREFIX: /metube
     volumes:
       - ./downloads:/downloads
     networks:
