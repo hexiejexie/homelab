@@ -23,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   scrutiny:
     container_name: ${APP_NAME}
-    image: ghcr.io/analogj/scrutiny:${IMAGE_TAG:-master-omnibus}
+    image: ghcr.io/analogj/scrutiny:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}

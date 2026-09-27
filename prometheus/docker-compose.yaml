@@ -53,7 +53,7 @@ services:
 
   cadvisor:
     container_name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-v0.51.0}
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-latest}
     restart: unless-stopped
     privileged: true
     environment:

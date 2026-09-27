@@ -25,7 +25,7 @@ x-kuma-labels: &kuma-template
 services:
   grafana:
     container_name: ${APP_NAME}
-    image: grafana/grafana-enterprise:${IMAGE_TAG:-11.6.0}
+    image: grafana/grafana-enterprise:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
     environment:

@@ -23,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   adguard:
     container_name: ${APP_NAME}
-    image: adguard/adguardhome:${IMAGE_TAG:-v0.107.56}
+    image: adguard/adguardhome:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}

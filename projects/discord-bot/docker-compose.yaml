@@ -24,7 +24,7 @@ x-kuma-labels: &kuma-template
 
 services:
   botty:
-    image: ghcr.io/hexiejexie/botty-discord:${IMAGE_TAG:-v0.2.0}
+    image: ghcr.io/hexiejexie/botty-discord:${IMAGE_TAG:-latest}
     container_name: botty
     restart: unless-stopped
     environment:

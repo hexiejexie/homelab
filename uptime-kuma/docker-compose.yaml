@@ -23,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   uptime-kuma:
     container_name: ${APP_NAME}
-    image: louislam/uptime-kuma:${IMAGE_TAG:-1}
+    image: louislam/uptime-kuma:${IMAGE_TAG:-2}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}

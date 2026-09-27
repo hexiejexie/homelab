@@ -45,7 +45,7 @@ x-kuma-labels: &kuma-template
 services:
   loki:
     container_name: ${APP_NAME}
-    image: grafana/loki:${IMAGE_TAG:-3.5.0}
+    image: grafana/loki:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
@@ -61,7 +61,7 @@ services:
 
   alloy:
     container_name: alloy
-    image: grafana/alloy:${ALLOY_TAG:-v1.5.0}
+    image: grafana/alloy:${ALLOY_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}

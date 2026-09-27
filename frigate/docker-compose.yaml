@@ -23,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   frigate:
     container_name: ${APP_NAME}
-    image: ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-latest}
+    image: ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-stable}
     restart: unless-stopped
     shm_size: 512mb
     devices:

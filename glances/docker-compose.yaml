@@ -23,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   glances:
     container_name: ${APP_NAME}
-    image: nicolargo/glances:${IMAGE_TAG:-ubuntu-latest-full}
+    image: nicolargo/glances:${IMAGE_TAG:-latest}
     restart: unless-stopped
     pid: host
     environment:
