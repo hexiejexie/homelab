@@ -92,6 +92,7 @@ graph TB
                 BTOP[btop]
                 NCDU[ncdu]
                 GITLAB[GitLab + Runner]
+                WATCHTOWER[Watchtower]
             end
 
             subgraph games["Games"]
@@ -217,6 +218,7 @@ graph TB
 | [btop](btop/) | Process viewer (web-based terminal) |
 | [ncdu](ncdu/) | Disk usage analyzer (web-based terminal) |
 | [GitLab](gitlab/) | Self-hosted Git with a CI runner |
+| [Watchtower](watchtower/) | Pulls and redeploys newer images daily at 04:00 |
 
 ### Games
 | Service | What it does |
@@ -275,6 +277,7 @@ services:
 - Two Docker networks: `frontend` (Traefik-exposed) and `backend` (internal comms)
 - Multi-service stacks use additional anchors for shared environment variables
 - HTTP → HTTPS redirect happens once at Traefik's `web` entrypoint (`traefik/config/traefik.yaml`), so services only define an `-https` router
+- Images track `latest` (or the project's equivalent, e.g. Immich `release`, Frigate `stable`) and Watchtower keeps them current; databases stay on a pinned major version, and Authentik and wg-easy are upgraded by hand
 - Every container sets `TZ` (defaults to `Europe/Amsterdam`); images without tzdata also mount `/usr/share/zoneinfo`
 
 ---
