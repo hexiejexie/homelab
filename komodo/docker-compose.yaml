@@ -46,6 +46,11 @@ services:
       TZ: ${TZ:-Europe/Amsterdam}
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./data/mongo-data:/data/db
       - ./data/mongo-config:/data/configdb
@@ -65,6 +70,11 @@ services:
       KOMODO_DATABASE_ADDRESS: mongo:27017
       KOMODO_DATABASE_USERNAME: ${KOMODO_DB_USERNAME}
       KOMODO_DATABASE_PASSWORD: ${KOMODO_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ${COMPOSE_KOMODO_BACKUPS_PATH}:/backups
       - ./config/core.config.toml:/config/config.toml
@@ -80,6 +90,11 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -ks -o /dev/null https://localhost:8120/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /proc:/proc

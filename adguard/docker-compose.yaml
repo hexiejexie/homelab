@@ -31,6 +31,11 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${APP_PORT}/login.html || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/opt/adguardhome/conf
       - ./workdir:/opt/adguardhome/work

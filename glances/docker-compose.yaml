@@ -33,6 +33,11 @@ services:
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
       GLANCES_OPT: -w
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/api/4/status || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/rootfs:ro

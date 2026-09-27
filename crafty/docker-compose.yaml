@@ -35,6 +35,11 @@ services:
       USE_HTTPS: "false"
     ports:
       - 25565-25568:25565-25568
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import ssl,urllib.request as u; u.urlopen('https://localhost:${APP_PORT}/', context=ssl._create_unverified_context(), timeout=5)"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./backups:/crafty/backups
       - ./logs:/crafty/logs

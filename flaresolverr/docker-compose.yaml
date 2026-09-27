@@ -32,6 +32,11 @@ services:
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/health || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/config
     networks:

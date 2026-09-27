@@ -33,6 +33,11 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/myspeed/data
     networks:

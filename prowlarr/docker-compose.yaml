@@ -38,6 +38,11 @@ services:
       TZ: ${TZ:-Europe/Amsterdam}
       PUID: "0"
       PGID: "0"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ping || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./prowlarr:/config
     networks:

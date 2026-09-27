@@ -33,6 +33,11 @@ services:
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
       NCDU_PATH: /w
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /:/w:ro
