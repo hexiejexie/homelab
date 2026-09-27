@@ -35,7 +35,8 @@ services:
       PUID: "0"
       PGID: "0"
     ports:
-      - 63531:63531
+      - 63531:63531/tcp
+      - 63531:63531/udp
     healthcheck:
       test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
       interval: 1m30s
