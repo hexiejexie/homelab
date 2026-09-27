@@ -29,7 +29,7 @@ x-kuma-labels: &kuma-template
 
 x-authentik-env: &authentik-env
   TZ: ${TZ:-Europe/Amsterdam}
-  AUTHENTIK_POSTGRESQL__HOST: postgresql
+  AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
   AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
   AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
   AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
@@ -50,13 +50,13 @@ x-authentik-common: &authentik-common
   environment:
     <<: *authentik-env
   depends_on:
-    postgresql:
+    authentik-postgresql:
       condition: service_healthy
     redis-auth:
       condition: service_healthy
 
 services:
-  postgresql:
+  authentik-postgresql:
     container_name: authentik-postgresql
     image: docker.io/library/postgres:16-alpine
     restart: unless-stopped
@@ -94,7 +94,7 @@ services:
     networks:
       - backend
 
-  server:
+  authentik:
     <<: *authentik-common
     container_name: ${APP_NAME}
     command: server
@@ -107,7 +107,7 @@ services:
       - ./media:/media
       - ./custom-templates:/templates
 
-  worker:
+  authentik-worker:
     <<: *authentik-common
     container_name: authentik-worker
     command: worker

@@ -31,7 +31,7 @@ x-kuma-labels: &kuma-template
   kuma.komodo.http.interval: 60
 
 services:
-  mongo:
+  mongo-komodo:
     container_name: mongo-komodo
     image: mongo:${MONGO_TAG:-8}
     restart: unless-stopped
@@ -59,15 +59,15 @@ services:
     labels:
       komodo.skip: true
 
-  core:
+  komodo:
     container_name: ${APP_NAME}
     image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
-      - mongo
+      - mongo-komodo
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
-      KOMODO_DATABASE_ADDRESS: mongo:27017
+      KOMODO_DATABASE_ADDRESS: mongo-komodo:27017
       KOMODO_DATABASE_USERNAME: ${KOMODO_DB_USERNAME}
       KOMODO_DATABASE_PASSWORD: ${KOMODO_DB_PASSWORD}
     healthcheck:
