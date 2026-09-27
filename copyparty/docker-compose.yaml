@@ -37,7 +37,7 @@ services:
       PYTHONUNBUFFERED: 1
     stop_grace_period: 15s
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:3923/?reset=/._"]
+      test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:${APP_PORT}/?reset=/._"]
       interval: 1m
       timeout: 2s
       retries: 5

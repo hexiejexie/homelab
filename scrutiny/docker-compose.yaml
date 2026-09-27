@@ -35,7 +35,7 @@ services:
       TZ: ${TZ:-Europe/Amsterdam}
       COLLECTOR_CRON_SCHEDULE: "0 23 * * *"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/api/health || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
