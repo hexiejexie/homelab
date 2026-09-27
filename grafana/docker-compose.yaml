@@ -33,6 +33,7 @@ services:
     restart: unless-stopped
     user: "0:0"
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       GF_SERVER_ROOT_URL: https://${APP_NAME}.${BASE_DOMAIN}/
       GF_PLUGINS_PREINSTALL: grafana-clock-panel
       GF_SMTP_ENABLED: "true"

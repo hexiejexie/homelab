@@ -40,6 +40,8 @@ services:
     image: jellyfin/jellyfin:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     devices:
       - /dev/dri:/dev/dri
     group_add:

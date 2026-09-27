@@ -34,6 +34,8 @@ services:
     restart: unless-stopped
     init: true
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1"]
       interval: 15s

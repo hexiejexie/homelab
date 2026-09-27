@@ -32,6 +32,7 @@ services:
     cap_add:
       - SYS_RAWIO
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       COLLECTOR_CRON_SCHEDULE: "0 23 * * *"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]

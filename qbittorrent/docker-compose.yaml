@@ -35,6 +35,7 @@ services:
     image: lscr.io/linuxserver/qbittorrent:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PUID: "0"
       PGID: "0"
     ports:

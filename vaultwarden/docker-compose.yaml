@@ -30,6 +30,7 @@ services:
     image: vaultwarden/server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       DOMAIN: https://${APP_NAME}.${BASE_DOMAIN}
       SIGNUPS_ALLOWED: "false"
       ADMIN_TOKEN: ${ADMIN_TOKEN}

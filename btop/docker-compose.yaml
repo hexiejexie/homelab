@@ -31,11 +31,13 @@ services:
     restart: unless-stopped
     privileged: true
     cpuset: "5"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /proc:/proc
       - /sys:/sys
       - /dev:/dev
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/root/.config/btop
     networks:
       - frontend

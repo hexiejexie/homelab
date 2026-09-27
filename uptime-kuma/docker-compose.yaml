@@ -29,6 +29,8 @@ services:
     container_name: ${APP_NAME}
     image: louislam/uptime-kuma:${IMAGE_TAG:-1}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -41,6 +43,7 @@ services:
     image: ghcr.io/bigboot/autokuma:${AUTOKUMA_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       AUTOKUMA__KUMA__URL: http://uptime-kuma:3001
       AUTOKUMA__KUMA__USERNAME: ${KUMA_USERNAME}
       AUTOKUMA__KUMA__PASSWORD: ${KUMA_PASSWORD}

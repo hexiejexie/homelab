@@ -4,6 +4,7 @@ services:
     image: crowdsecurity/crowdsec:latest
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       GID: "1000"
     volumes:
       - ./config:/etc/crowdsec

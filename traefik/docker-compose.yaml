@@ -33,6 +33,7 @@ services:
     image: traefik:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
     ports:
       - 80:80

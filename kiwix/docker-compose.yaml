@@ -30,8 +30,11 @@ services:
     image: ghcr.io/kiwix/kiwix-serve:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command: "*.zim"
     volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /18tb/kiwix/zim:/data
     networks:
       - frontend

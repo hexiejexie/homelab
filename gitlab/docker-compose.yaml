@@ -32,8 +32,10 @@ services:
     hostname: ${APP_NAME}.${BASE_DOMAIN}
     shm_size: 512m
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'https://${APP_NAME}.${BASE_DOMAIN}'
+        gitlab_rails['time_zone'] = '${TZ:-Europe/Amsterdam}'
         nginx['listen_port'] = 80
         nginx['listen_https'] = false
         nginx['proxy_set_headers'] = {
@@ -59,7 +61,6 @@ services:
     ports:
       - "2222:22"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/etc/gitlab
       - ./logs:/var/log/gitlab
       - ./data:/var/opt/gitlab
@@ -78,10 +79,11 @@ services:
     container_name: ${APP_NAME}-runner
     image: gitlab/gitlab-runner:latest
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     depends_on:
       - gitlab
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./runner-config:/etc/gitlab-runner
       - /var/run/docker.sock:/var/run/docker.sock
     networks:

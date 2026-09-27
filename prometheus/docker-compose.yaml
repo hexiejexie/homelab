@@ -39,6 +39,8 @@ services:
     image: prom/prometheus:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -58,6 +60,8 @@ services:
     image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-v0.51.0}
     restart: unless-stopped
     privileged: true
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -72,6 +76,7 @@ services:
     image: ghcr.io/henrywhitaker3/adguard-exporter:${ADGUARD_EXPORTER_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       ADGUARD_SERVERS: http://adguard:80
       ADGUARD_USERNAMES: ${ADGUARD_USER}
       ADGUARD_PASSWORDS: ${ADGUARD_PASS}

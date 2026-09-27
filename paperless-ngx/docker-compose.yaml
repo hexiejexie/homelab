@@ -33,11 +33,12 @@ services:
       paperless-redis:
         condition: service_healthy
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PAPERLESS_URL: https://${APP_NAME}.${BASE_DOMAIN}
       PAPERLESS_REDIS: redis://paperless-redis:6379
       PAPERLESS_DBENGINE: sqlite
       PAPERLESS_OCR_LANGUAGE: eng
-      PAPERLESS_TIME_ZONE: Europe/Amsterdam
+      PAPERLESS_TIME_ZONE: ${TZ:-Europe/Amsterdam}
       PAPERLESS_ADMIN_USER: ${ADMIN_USER}
       PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PAPERLESS_EMAIL_HOST: ${SMTP_HOST}
@@ -61,6 +62,8 @@ services:
     container_name: paperless-redis
     image: redis:7-alpine
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 30s

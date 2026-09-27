@@ -30,6 +30,7 @@ services:
     image: hkotel/mealie:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       BASE_URL: https://${APP_NAME}.${BASE_DOMAIN}
       ALLOW_SIGNUP: "false"
       SMTP_HOST: ${SMTP_HOST}

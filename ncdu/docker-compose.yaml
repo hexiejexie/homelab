@@ -31,10 +31,11 @@ services:
     restart: unless-stopped
     privileged: true
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       NCDU_PATH: /w
     volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /:/w:ro
-      - /etc/localtime:/etc/localtime:ro
     networks:
       - frontend
     labels:

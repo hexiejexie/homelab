@@ -25,6 +25,7 @@ x-kuma-labels: &kuma-template
   kuma.immich.http.interval: 60
 
 x-immich-env: &immich-env
+  TZ: ${TZ:-Europe/Amsterdam}
   DB_DATABASE_NAME: ${DB_DATABASE_NAME}
   DB_PASSWORD: ${DB_PASSWORD}
   DB_USERNAME: ${DB_USERNAME}
@@ -50,7 +51,6 @@ services:
       - "44"
       - "992"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /18tb/immich/upload:/usr/src/app/upload
       - /18tb/Backup:/archive
@@ -82,6 +82,7 @@ services:
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       POSTGRES_DB: immich-db
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -102,6 +103,8 @@ services:
     container_name: immich-redis
     image: redis:6.2-alpine
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping || exit 1"]
       interval: 30s

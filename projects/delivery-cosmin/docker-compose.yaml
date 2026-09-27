@@ -23,6 +23,8 @@ services:
     container_name: ${APP_NAME}
     image: hexiejexie/delivery-app:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - ./romania:/app/romania
       - ./doc_number.txt:/app/doc_number.txt

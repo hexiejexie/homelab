@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
-      TZ: ${TZ}
+      TZ: ${TZ:-Europe/Amsterdam}
       AUTOBRR__HOST: 0.0.0.0
       AUTOBRR__PORT: ${APP_PORT}
       AUTOBRR__SESSION_SECRET: ${SESSION_SECRET}
@@ -43,7 +43,6 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
     networks:
       - frontend

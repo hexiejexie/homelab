@@ -28,6 +28,7 @@ x-kuma-labels: &kuma-template
   kuma.authentik.http.interval: 60
 
 x-authentik-env: &authentik-env
+  TZ: ${TZ:-Europe/Amsterdam}
   AUTHENTIK_POSTGRESQL__HOST: postgresql
   AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
   AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
@@ -60,6 +61,7 @@ services:
     image: docker.io/library/postgres:16-alpine
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       POSTGRES_DB: ${PG_DB:-authentik}
       POSTGRES_USER: ${PG_USER:-authentik}
       POSTGRES_PASSWORD: ${PG_PASS}
@@ -78,6 +80,8 @@ services:
     container_name: authentik-redis
     image: docker.io/library/redis:7-alpine
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command: --save 60 1 --loglevel warning
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]

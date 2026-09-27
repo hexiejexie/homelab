@@ -43,6 +43,7 @@ services:
           memory: 512M
     command: --quiet --wiredTigerCacheSizeGB 0.25
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DB_PASSWORD}
     volumes:
@@ -60,6 +61,7 @@ services:
     depends_on:
       - mongo
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       KOMODO_DATABASE_ADDRESS: mongo:27017
       KOMODO_DATABASE_USERNAME: ${KOMODO_DB_USERNAME}
       KOMODO_DATABASE_PASSWORD: ${KOMODO_DB_PASSWORD}
@@ -76,6 +78,8 @@ services:
     container_name: komodo-periphery
     image: ghcr.io/moghtech/komodo-periphery:${COMPOSE_KOMODO_IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /proc:/proc

@@ -35,12 +35,12 @@ services:
       timeout: 10s
       retries: 3
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PUID: "0"
       PGID: "0"
       DOCKER_MODS: linuxserver/mods:universal-calibre #optional
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1" #optional
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /18tb//media/books:/books
     networks:

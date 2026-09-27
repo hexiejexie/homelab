@@ -41,11 +41,11 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./backend-data:/app/prisma
     networks:
       - frontend
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       DATABASE_URL: file:/app/prisma/dev.db
       FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
       PORT: "8000"
@@ -84,11 +84,10 @@ services:
       retries: 3
     depends_on:
       - ${APP_NAME}-backend   
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
     networks:
       - frontend
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       BACKEND_URL: ${APP_NAME}-backend:8000
       FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
     labels:

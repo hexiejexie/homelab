@@ -35,6 +35,8 @@ services:
       timeout: 10s
       retries: 3
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      GENERIC_TIMEZONE: ${TZ:-Europe/Amsterdam}
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
       N8N_HOST: ${APP_NAME}.${BASE_DOMAIN}
       N8N_EDITOR_BASE_URL: https://${APP_NAME}.${BASE_DOMAIN}
@@ -42,7 +44,6 @@ services:
       NODE_ENV: production
       WEBHOOK_URL: https://${APP_NAME}.${BASE_DOMAIN}/
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./n8n-data:/home/node/.n8n
       - ./files:/files
     networks:

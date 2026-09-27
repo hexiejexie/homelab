@@ -32,6 +32,7 @@ services:
     image: alexta69/metube:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       DEFAULT_THEME: dark
       DELETE_FILE_ON_TRASHCAN: "true"
       GID: "1000"

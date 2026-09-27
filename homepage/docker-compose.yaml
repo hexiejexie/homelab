@@ -23,6 +23,7 @@ services:
     image: ghcr.io/gethomepage/homepage:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       HOMEPAGE_ALLOWED_HOSTS: ${APP_NAME}.${BASE_DOMAIN}
       HOMEPAGE_VAR_PROXMOX_USERNAME: ${HOMEPAGE_VAR_PROXMOX_USERNAME}
       HOMEPAGE_VAR_PROXMOX_PASSWORD: ${HOMEPAGE_VAR_PROXMOX_PASSWORD}

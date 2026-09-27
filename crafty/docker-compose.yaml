@@ -31,7 +31,7 @@ services:
     image: registry.gitlab.com/crafty-controller/crafty-4:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      TZ: Etc/UTC
+      TZ: ${TZ:-Europe/Amsterdam}
       USE_HTTPS: "false"
     ports:
       - 25565-25568:25565-25568

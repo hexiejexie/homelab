@@ -30,6 +30,7 @@ services:
     image: santiagosayshey/profilarr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PUID: "1000"
       PGID: "1000"
     volumes:
