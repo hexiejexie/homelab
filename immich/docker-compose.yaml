@@ -26,13 +26,6 @@ x-immich-env: &immich-env
   DB_DATABASE_NAME: ${DB_DATABASE_NAME}
   DB_PASSWORD: ${DB_PASSWORD}
   DB_USERNAME: ${DB_USERNAME}
-  SMTP_ENABLED: "true"
-  SMTP_TRANSPORT_IGNORECERT: "true"
-  SMTP_TRANSPORT_HOST: ${SMTP_HOST}
-  SMTP_TRANSPORT_PORT: ${SMTP_PORT}
-  SMTP_TRANSPORT_USERNAME: ${SMTP_USERNAME}
-  SMTP_TRANSPORT_PASSWORD: ${SMTP_PASSWORD}
-  SMTP_FROM: ${SMTP_FROM}
   IMMICH_CONFIG_FILE: ${IMMICH_CONFIG_FILE}
   REDIS_HOSTNAME: immich-redis
 
@@ -69,7 +62,7 @@ services:
     image: altran1502/immich-machine-learning:${IMAGE_TAG:-v2.4.1}
     restart: unless-stopped
     environment:
-      <<: *immich-env
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - /18tb/immich/model-cache:/cache
     networks:
