@@ -30,7 +30,7 @@ x-kuma-labels: &kuma-template
 services:
   radarr:
     container_name: ${APP_NAME}
-    image: ghcr.io/hotio/radarr:${IMAGE_TAG:-latest}
+    image: lscr.io/linuxserver/radarr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}

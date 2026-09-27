@@ -30,7 +30,7 @@ x-kuma-labels: &kuma-template
 services:
   sonarr-anime:
     container_name: ${APP_NAME}
-    image: ghcr.io/hotio/sonarr:${IMAGE_TAG:-latest}
+    image: lscr.io/linuxserver/sonarr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Amsterdam}
