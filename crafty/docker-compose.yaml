@@ -7,6 +7,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.crafty-https.service: ${APP_NAME}
   traefik.http.services.crafty.loadbalancer.server.port: ${APP_PORT}
   traefik.http.services.crafty.loadbalancer.server.scheme: https
+  traefik.http.services.crafty.loadbalancer.serverstransport: insecure@file
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
