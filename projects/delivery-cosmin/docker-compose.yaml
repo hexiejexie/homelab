@@ -28,7 +28,7 @@ services:
       retries: 3
     volumes:
       - ./romania:/app/romania
-      - ./doc_number.txt:/app/doc_number.txt
+      - ./order_counter.txt:/app/order_counter.txt
     networks:
       - frontend
     labels:
