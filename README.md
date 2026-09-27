@@ -45,6 +45,7 @@ graph TB
                 SCRUTINY[Scrutiny Web]
                 GLANCES[Glances]
                 MYSPEED[MySpeed]
+                LOKI[Loki + Alloy]
             end
 
             subgraph arr["Arr Stack"]
@@ -56,13 +57,17 @@ graph TB
                 QBIT[qBittorrent]
                 BAZARR[Bazarr]
                 PROFILARR[Profilarr]
+                AUTOBRR[autobrr]
+                QUI[qui]
             end
 
             subgraph media["Media"]
                 JELLYFIN[Jellyfin]
-                seerr[seerrr]
+                SEERR[Seerr]
                 METUBE[MeTube]
                 IMMICH[Immich]
+                CALIBRE[Calibre]
+                CALIBREWEB[Calibre-Web]
             end
 
             subgraph apps["Apps"]
@@ -74,6 +79,10 @@ graph TB
                 COPYPARTY[Copyparty]
                 CONVERTX[ConvertX]
                 OPENWEBUI[Open Web UI]
+                N8N[n8n]
+                EXCALIDRAW[Excalidraw]
+                EXCALIDASH[ExcaliDash]
+                HOMEASSISTANT[Home Assistant]
             end
 
             subgraph system["System"]
@@ -82,11 +91,13 @@ graph TB
                 FRIGATE[Frigate NVR]
                 BTOP[btop]
                 NCDU[ncdu]
+                GITLAB[GitLab + Runner]
             end
 
             subgraph games["Games"]
                 CRAFTY[Crafty]
                 TERRARIA[Terraria]
+                SDTD[7 Days to Die]
             end
         end
 
@@ -155,14 +166,17 @@ graph TB
 | [Glances](glances/) | Real-time system monitoring with host PID and filesystem visibility |
 | [Scrutiny](scrutiny/) | S.M.A.R.T. disk health monitoring (collector on Proxmox host) |
 | [MySpeed](myspeed/) | Internet speed tracking over time |
+| [Loki](loki/) | Log aggregation, with Alloy shipping container logs |
 
 ### Media
 | Service | What it does |
 |---|---|
 | [Jellyfin](jellyfin/) | Media server - dual-domain (`jellyfin.hexie.dev` + internal) |
-| [seerrr](seerr/) | Media request management |
+| [Seerr](seerr/) | Media request management |
 | [MeTube](metubedl/) | YouTube video/audio downloader |
 | [Immich](immich/) | Photo and video backup, google photos replacer |
+| [Calibre](calibre/) | E-book library manager (desktop app in the browser) |
+| [Calibre-Web](calibre-web/) | Web reader and browser for the Calibre library |
 
 ### Arr Stack
 | Service | What it does |
@@ -175,6 +189,8 @@ graph TB
 | [Profilarr](profilarr/) | Quality profile sync across *arr instances |
 | [qBittorrent](qbittorrent/) | Download client |
 | [FlareSolverr](flaresolverr/) | Cloudflare challenge solver for Prowlarr |
+| [autobrr](autobrr/) | Grabs releases from tracker IRC announces and RSS |
+| [qui](qui/) | Web UI for qBittorrent |
 
 ### Apps
 | Service | What it does |
@@ -187,6 +203,10 @@ graph TB
 | [Copyparty](copyparty/) | File sharing and upload portal |
 | [ConvertX](convertx/) | Convert any file |
 | [Open Web UI](open-webui/) | Web UI for self hosted ML Models |
+| [n8n](n8n/) | Workflow automation |
+| [Excalidraw](excalidraw/) | Whiteboard for sketches and diagrams |
+| [ExcaliDash](excalidash/) | Excalidraw with saved, organized drawings |
+| [Home Assistant](homeassistant/) | Home automation |
 
 ### System
 | Service | What it does |
@@ -196,17 +216,25 @@ graph TB
 | [Frigate](frigate/) | NVR with real-time object detection |
 | [btop](btop/) | Process viewer (web-based terminal) |
 | [ncdu](ncdu/) | Disk usage analyzer (web-based terminal) |
+| [GitLab](gitlab/) | Self-hosted Git with a CI runner |
 
 ### Games
 | Service | What it does |
 |---|---|
-| [Crafty](crafty/) | Minecraft server manager (tModLoader) |
-| [Terraria](terraria/) | Terraria tModLoader server |
+| [Crafty](crafty/) | Minecraft server manager |
+| [Terraria](projects/terraria/) | Terraria tModLoader server |
+| [7 Days to Die](projects/7daystodie/) | 7 Days to Die dedicated server |
 
 ### Headless
 | Service | What it does |
 |---|---|
-| [Discord Bot](discord-bot/) | Custom IP notification bot |
+| [Discord Bot](projects/discord-bot/) | Custom IP notification bot |
+
+### Projects
+| Service | What it does |
+|---|---|
+| [Pricing](projects/pricing/) | Pricing advisor web app + Postgres (`pricing.hexie.dev`) |
+| [Delivery](projects/delivery-cosmin/) | Delivery app (`delivery.hexie.dev`) |
 
 ---
 
@@ -217,8 +245,8 @@ All services follow a standardized template:
 ```yaml
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.<service>-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  # ... HTTP → HTTPS redirect, TLS, certresolver
+  traefik.http.routers.<service>-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
+  # ... websecure entrypoint, TLS, certresolver
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
@@ -234,6 +262,8 @@ services:
   service:
     container_name: ${APP_NAME}
     image: image:${IMAGE_TAG:-latest}
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     labels:
       <<: [*traefik-template, *homepage-template, *kuma-template]
 ```
@@ -244,6 +274,8 @@ services:
 - Label keys are hardcoded (Docker Compose doesn't interpolate env vars in keys), values use `${VAR}`
 - Two Docker networks: `frontend` (Traefik-exposed) and `backend` (internal comms)
 - Multi-service stacks use additional anchors for shared environment variables
+- HTTP → HTTPS redirect happens once at Traefik's `web` entrypoint (`traefik/config/traefik.yaml`), so services only define an `-https` router
+- Every container sets `TZ` (defaults to `Europe/Amsterdam`); images without tzdata also mount `/usr/share/zoneinfo`
 
 ---
 
