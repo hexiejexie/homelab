@@ -41,7 +41,6 @@ services:
       - 26900:26900/udp # Default game ports
       - 26901:26901/udp # Default game ports
       - 26902:26902/udp # Default game ports
-      - 8081:8081
     labels:
       <<: [*traefik-template, *homepage-template]
 
