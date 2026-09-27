@@ -38,7 +38,7 @@ services:
       OAUTHLIB_RELAX_TOKEN_SCOPE: "1" #optional
     volumes:
       - ./config:/config
-      - /18tb//media/books:/books
+      - /18tb/media/books:/books
     networks:
       - frontend
     labels:
