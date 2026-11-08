@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.prometheus-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.prometheus-http.entrypoints: web
-  traefik.http.routers.prometheus-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.prometheus-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.prometheus-https.entrypoints: websecure
   traefik.http.routers.prometheus-https.tls: true
@@ -39,6 +35,8 @@ services:
     image: prom/prometheus:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -55,9 +53,11 @@ services:
 
   cadvisor:
     container_name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-v0.51.0}
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_TAG:-latest}
     restart: unless-stopped
     privileged: true
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -72,6 +72,7 @@ services:
     image: ghcr.io/henrywhitaker3/adguard-exporter:${ADGUARD_EXPORTER_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       ADGUARD_SERVERS: http://adguard:80
       ADGUARD_USERNAMES: ${ADGUARD_USER}
       ADGUARD_PASSWORDS: ${ADGUARD_PASS}

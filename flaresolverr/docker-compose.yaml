@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.flaresolverr-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.flaresolverr-http.entrypoints: web
-  traefik.http.routers.flaresolverr-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.flaresolverr-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.flaresolverr-https.entrypoints: websecure
   traefik.http.routers.flaresolverr-https.tls: true
@@ -30,7 +26,13 @@ services:
     image: ghcr.io/flaresolverr/flaresolverr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/health || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/config
     networks:

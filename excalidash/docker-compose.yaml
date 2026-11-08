@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.excalidash-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.excalidash-http.entrypoints: web
-  traefik.http.routers.excalidash-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.excalidash-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.excalidash-https.entrypoints: websecure
   traefik.http.routers.excalidash-https.tls: true
@@ -35,29 +31,29 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://127.0.0.1:8000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+          "require('http').get('http://127.0.0.1:8000/health', (r) => process.exit(r.statusCode < 400 ? 0 : 1))",
         ]
       interval: 30s
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./backend-data:/app/prisma
     networks:
       - frontend
     environment:
-      - DATABASE_URL=file:/app/prisma/dev.db
-      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
-      - PORT=8000
-      - NODE_ENV=production
-      - AUTH_MODE=${AUTH_MODE:-local}
+      TZ: ${TZ:-Europe/Amsterdam}
+      DATABASE_URL: file:/app/prisma/dev.db
+      FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      PORT: "8000"
+      NODE_ENV: production
+      AUTH_MODE: ${AUTH_MODE:-local}
       # Keep disabled by default; only enable when a trusted proxy sanitizes forwarded headers.
-      - TRUST_PROXY=false
+      TRUST_PROXY: "false"
       # Optional for single-instance deployments:
       # if unset, backend auto-generates and persists one in the volume.
       # Recommended to set explicitly for portability and multi-instance setups.
-      - JWT_SECRET=${JWT_SECRET}
-      - CSRF_SECRET=${CSRF_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      CSRF_SECRET: ${CSRF_SECRET}
       # Optional OIDC settings (required for AUTH_MODE=hybrid or oidc_enforced)
       # - OIDC_PROVIDER_NAME=Authentik
       # - OIDC_ISSUER_URL=https://auth.example.com/application/o/excalidash/
@@ -83,14 +79,13 @@ services:
       timeout: 10s
       retries: 3
     depends_on:
-      - ${APP_NAME}-backend   
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - excalidash-backend
     networks:
       - frontend
     environment:
-      - BACKEND_URL=${APP_NAME}-backend:8000
-      - FRONTEND_URL=https://${APP_NAME}.${BASE_DOMAIN}
+      TZ: ${TZ:-Europe/Amsterdam}
+      BACKEND_URL: ${APP_NAME}-backend:8000
+      FRONTEND_URL: https://${APP_NAME}.${BASE_DOMAIN}
     labels:
       <<: [*traefik-template, *homepage-template, *kuma-template]
 

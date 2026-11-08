@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.calibre-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.calibre-http.entrypoints: web
-  traefik.http.routers.calibre-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.calibre-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.calibre-https.entrypoints: websecure
   traefik.http.routers.calibre-https.tls: true
@@ -35,10 +31,10 @@ services:
       timeout: 10s
       retries: 3
     environment:
-      - PUID=0
-      - PGID=0
+      TZ: ${TZ:-Europe/Amsterdam}
+      PUID: "0"
+      PGID: "0"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - /18tb/media/books:/config
     networks:
       - frontend

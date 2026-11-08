@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.7daystodie-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.7daystodie-http.entrypoints: web
-  traefik.http.routers.7daystodie-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.7daystodie-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.7daystodie-https.entrypoints: websecure
   traefik.http.routers.7daystodie-https.tls: true
@@ -26,11 +22,12 @@ services:
     image: vinanrra/7dtd-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=1000
-      - PGID=1000
-      - VERSION=stable   
-      - TimeZone=Europe/Amsterdam
-      - START_MODE=1
+      TZ: ${TZ:-Europe/Amsterdam}
+      PUID: "1000"
+      PGID: "1000"
+      VERSION: stable
+      TimeZone: ${TZ:-Europe/Amsterdam}
+      START_MODE: "1"
     volumes:
       - ./config:/home/sdtdserver/serverfiles/
       - ./log:/home/sdtdserver/log/
@@ -44,7 +41,6 @@ services:
       - 26900:26900/udp # Default game ports
       - 26901:26901/udp # Default game ports
       - 26902:26902/udp # Default game ports
-      - 8081:8081
     labels:
       <<: [*traefik-template, *homepage-template]
 

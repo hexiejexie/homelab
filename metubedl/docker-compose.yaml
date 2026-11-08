@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.metubedl-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.metubedl-http.entrypoints: web
-  traefik.http.routers.metubedl-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.metubedl-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.metubedl-https.entrypoints: websecure
   traefik.http.routers.metubedl-https.tls: true
@@ -32,11 +28,12 @@ services:
     image: alexta69/metube:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - DEFAULT_THEME=dark
-      - DELETE_FILE_ON_TRASHCAN=true
-      - GID=1000
-      - UID=1000
-      - URL_PREFIX=/metube
+      TZ: ${TZ:-Europe/Amsterdam}
+      DEFAULT_THEME: dark
+      DELETE_FILE_ON_TRASHCAN: "true"
+      GID: "1000"
+      UID: "1000"
+      URL_PREFIX: /metube
     volumes:
       - ./downloads:/downloads
     networks:

@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.glances-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.glances-http.entrypoints: web
-  traefik.http.routers.glances-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.glances-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.glances-https.entrypoints: websecure
   traefik.http.routers.glances-https.tls: true
@@ -27,11 +23,17 @@ x-kuma-labels: &kuma-template
 services:
   glances:
     container_name: ${APP_NAME}
-    image: nicolargo/glances:${IMAGE_TAG:-ubuntu-latest-full}
+    image: nicolargo/glances:${IMAGE_TAG:-latest}
     restart: unless-stopped
     pid: host
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       GLANCES_OPT: -w
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/api/4/status || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/rootfs:ro

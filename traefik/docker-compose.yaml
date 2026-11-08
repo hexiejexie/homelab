@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.traefik-dashboard-http.rule: Host(`${APP_NAME}-dashboard.${BASE_DOMAIN}`)
-  traefik.http.routers.traefik-dashboard-http.entrypoints: web
-  traefik.http.routers.traefik-dashboard-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.traefik-dashboard-https.rule: Host(`${APP_NAME}-dashboard.${BASE_DOMAIN}`)
   traefik.http.routers.traefik-dashboard-https.entrypoints: websecure
   traefik.http.routers.traefik-dashboard-https.tls: true
@@ -33,13 +29,19 @@ services:
     image: traefik:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
     ports:
       - 80:80
       - 443:443
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config:/etc/traefik:ro
       - ./certs:/var/traefik/certs
     networks:
       - frontend

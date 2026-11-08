@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.homepage-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.homepage-http.entrypoints: web
-  traefik.http.routers.homepage-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.homepage-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.homepage-https.entrypoints: websecure
   traefik.http.routers.homepage-https.tls: true
@@ -23,6 +19,7 @@ services:
     image: ghcr.io/gethomepage/homepage:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       HOMEPAGE_ALLOWED_HOSTS: ${APP_NAME}.${BASE_DOMAIN}
       HOMEPAGE_VAR_PROXMOX_USERNAME: ${HOMEPAGE_VAR_PROXMOX_USERNAME}
       HOMEPAGE_VAR_PROXMOX_PASSWORD: ${HOMEPAGE_VAR_PROXMOX_PASSWORD}

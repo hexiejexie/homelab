@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.immich-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.immich-http.entrypoints: web
-  traefik.http.routers.immich-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.immich-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.immich-https.entrypoints: websecure
   traefik.http.routers.immich-https.tls: true
@@ -25,22 +21,18 @@ x-kuma-labels: &kuma-template
   kuma.immich.http.interval: 60
 
 x-immich-env: &immich-env
+  TZ: ${TZ:-Europe/Amsterdam}
+  DB_HOSTNAME: immich-postgres
   DB_DATABASE_NAME: ${DB_DATABASE_NAME}
   DB_PASSWORD: ${DB_PASSWORD}
   DB_USERNAME: ${DB_USERNAME}
-  SMTP_ENABLED: "true"
-  SMTP_TRANSPORT_IGNORECERT: "true"
-  SMTP_TRANSPORT_HOST: ${SMTP_HOST}
-  SMTP_TRANSPORT_PORT: ${SMTP_PORT}
-  SMTP_TRANSPORT_USERNAME: ${SMTP_USERNAME}
-  SMTP_TRANSPORT_PASSWORD: ${SMTP_PASSWORD}
-  SMTP_FROM: ${SMTP_FROM}
   IMMICH_CONFIG_FILE: ${IMMICH_CONFIG_FILE}
+  REDIS_HOSTNAME: immich-redis
 
 services:
   immich-server:
     container_name: ${APP_NAME}
-    image: altran1502/immich-server:${IMAGE_TAG:-v2.4.1}
+    image: altran1502/immich-server:${IMAGE_TAG:-release}
     restart: unless-stopped
     environment:
       <<: *immich-env
@@ -50,7 +42,6 @@ services:
       - "44"
       - "992"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /18tb/immich/upload:/usr/src/app/upload
       - /18tb/Backup:/archive
@@ -59,29 +50,33 @@ services:
       - frontend
       - backend
     depends_on:
-      database:
+      immich-postgres:
         condition: service_healthy
-      redis:
+      immich-redis:
         condition: service_healthy
     labels:
       <<: [*traefik-template, *homepage-template, *kuma-template]
 
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: altran1502/immich-machine-learning:${IMAGE_TAG:-v2.4.1}
+    image: altran1502/immich-machine-learning:${IMAGE_TAG:-release}
     restart: unless-stopped
     environment:
-      <<: *immich-env
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - /18tb/immich/model-cache:/cache
     networks:
       - backend
 
-  database:
+  immich-postgres:
     container_name: immich-postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    labels:
+      # pinned by digest to the version immich expects; upgrade by hand
+      com.centurylinklabs.watchtower.enable: "false"
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       POSTGRES_DB: immich-db
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -98,10 +93,12 @@ services:
     networks:
       - backend
 
-  redis:
+  immich-redis:
     container_name: immich-redis
     image: redis:6.2-alpine
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping || exit 1"]
       interval: 30s

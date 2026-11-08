@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.sonarr-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.sonarr-http.entrypoints: web
-  traefik.http.routers.sonarr-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.sonarr-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.sonarr-https.entrypoints: websecure
   traefik.http.routers.sonarr-https.tls: true
@@ -32,11 +28,17 @@ x-kuma-labels: &kuma-template
 services:
   sonarr:
     container_name: ${APP_NAME}
-    image: ghcr.io/hotio/sonarr:${IMAGE_TAG:-latest}
+    image: lscr.io/linuxserver/sonarr:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=0
-      - PGID=0
+      TZ: ${TZ:-Europe/Amsterdam}
+      PUID: "0"
+      PGID: "0"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ping || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/config
       - /18tb/media:/data

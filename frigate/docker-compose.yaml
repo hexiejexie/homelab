@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.frigate-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.frigate-http.entrypoints: web
-  traefik.http.routers.frigate-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.frigate-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.frigate-https.entrypoints: websecure
   traefik.http.routers.frigate-https.tls: true
@@ -27,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   frigate:
     container_name: ${APP_NAME}
-    image: ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-latest}
+    image: ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-stable}
     restart: unless-stopped
     shm_size: 512mb
     devices:
@@ -35,7 +31,8 @@ services:
     group_add:
       - "992"   
     environment:
-      - LIBVA_DRIVER_NAME=radeonsi
+      TZ: ${TZ:-Europe/Amsterdam}
+      LIBVA_DRIVER_NAME: radeonsi
     ports:
       - 1984:1984
       - 8554:8554
@@ -47,7 +44,6 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /mnt/disks/ssd-448gb/transcode-cache/frigate:/media/frigate
     networks:

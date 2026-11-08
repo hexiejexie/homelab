@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.kiwix-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.kiwix-http.entrypoints: web
-  traefik.http.routers.kiwix-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.kiwix-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.kiwix-https.entrypoints: websecure
   traefik.http.routers.kiwix-https.tls: true
@@ -30,8 +26,16 @@ services:
     image: ghcr.io/kiwix/kiwix-serve:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command: "*.zim"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /18tb/kiwix/zim:/data
     networks:
       - frontend

@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.copyparty-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.copyparty-http.entrypoints: web
-  traefik.http.routers.copyparty-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.copyparty-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.copyparty-https.entrypoints: websecure
   traefik.http.routers.copyparty-https.tls: true
@@ -32,11 +28,12 @@ services:
     restart: unless-stopped
     user: "0:0"
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       LD_PRELOAD: /usr/lib/libmimalloc-secure.so.2
       PYTHONUNBUFFERED: 1
     stop_grace_period: 15s
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:3923/?reset=/._"]
+      test: ["CMD-SHELL", "wget --spider -q 127.0.0.1:${APP_PORT}/?reset=/._"]
       interval: 1m
       timeout: 2s
       retries: 5

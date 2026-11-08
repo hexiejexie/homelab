@@ -1,0 +1,40 @@
+services:
+  watchtower:
+    container_name: ${APP_NAME}
+    image: ghcr.io/nicholas-fedor/watchtower:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      # six-field cron (seconds first): every day at 04:00
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      # only report new images, don't redeploy; set to false in .env to auto-update again
+      WATCHTOWER_MONITOR_ONLY: ${WATCHTOWER_MONITOR_ONLY:-true}
+      # shoutrrr URL in .env, e.g. smtp://user:pass@host:587/?fromaddress=..&toaddresses=..
+      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL}
+      WATCHTOWER_NOTIFICATIONS_HOSTNAME: ${WATCHTOWER_NOTIFICATIONS_HOSTNAME:-pulosu}
+      # the default report only lists updated/failed; in monitor-only mode new images land in .Stale
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATION_TEMPLATE: |-
+        {{- if .Report -}}
+          {{- with .Report -}}
+            {{- if or .Stale .Failed -}}
+        {{ len .Stale }} container(s) have a newer image (not applied, monitor-only):
+              {{- range .Stale }}
+        - {{ .Name }} ({{ .ImageName }})
+              {{- end }}
+              {{- range .Failed }}
+        - FAILED {{ .Name }}: {{ .Error }}
+              {{- end }}
+              {{- if .Skipped }}
+
+        could not check: {{ range $$i, $$c := .Skipped }}{{ if $$i }}, {{ end }}{{ $$c.Name }}{{ end }}
+              {{- end }}
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          {{- range .Entries -}}{{ .Message }}{{ "\n" }}{{- end -}}
+        {{- end -}}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

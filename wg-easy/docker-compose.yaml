@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.wireguard-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.wireguard-http.entrypoints: web
-  traefik.http.routers.wireguard-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.wireguard-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.wireguard-https.entrypoints: websecure
   traefik.http.routers.wireguard-https.tls: true
@@ -27,7 +23,7 @@ x-kuma-labels: &kuma-template
 services:
   wireguard:
     container_name: ${APP_NAME}
-    image: ghcr.io/wg-easy/wg-easy:${IMAGE_TAG:-15}
+    image: ghcr.io/wg-easy/wg-easy:${IMAGE_TAG:-14}
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -36,6 +32,7 @@ services:
       - net.ipv4.ip_forward=1
       - net.ipv4.conf.all.src_valid_mark=1
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       DISABLE_IPV6: "true"
       WG_HOST: ${WG_HOST}
     ports:

@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.loki-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.loki-http.entrypoints: web
-  traefik.http.routers.loki-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.loki-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.loki-https.entrypoints: websecure
   traefik.http.routers.loki-https.tls: true
@@ -13,9 +9,6 @@ x-traefik-labels: &traefik-template
 
 x-alloy-traefik-labels: &alloy-traefik-template
   traefik.enable: true
-  traefik.http.routers.alloy-http.rule: Host(`alloy.${BASE_DOMAIN}`)
-  traefik.http.routers.alloy-http.entrypoints: web
-  traefik.http.routers.alloy-http.middlewares: redirect-to-https
   traefik.http.routers.alloy-https.rule: Host(`alloy.${BASE_DOMAIN}`)
   traefik.http.routers.alloy-https.entrypoints: websecure
   traefik.http.routers.alloy-https.tls: true
@@ -52,8 +45,10 @@ x-kuma-labels: &kuma-template
 services:
   loki:
     container_name: ${APP_NAME}
-    image: grafana/loki:${IMAGE_TAG:-3.5.0}
+    image: grafana/loki:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command: -config.file=/etc/loki/loki.yaml
     volumes:
       - ./config/loki.yaml:/etc/loki/loki.yaml:ro
@@ -66,8 +61,10 @@ services:
 
   alloy:
     container_name: alloy
-    image: grafana/alloy:${ALLOY_TAG:-v1.5.0}
+    image: grafana/alloy:${ALLOY_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     command:
       - run
       - --server.http.listen-addr=0.0.0.0:12345

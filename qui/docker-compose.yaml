@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.qui-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.qui-http.entrypoints: web
-  traefik.http.routers.qui-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.qui-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qui-https.entrypoints: websecure
   traefik.http.routers.qui-https.tls: true
@@ -29,13 +25,14 @@ services:
     container_name: ${APP_NAME}
     image: ghcr.io/autobrr/qui:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
       - /18tb/media:/data
       - /18tb/kiwix/zim:/kiwix/zim

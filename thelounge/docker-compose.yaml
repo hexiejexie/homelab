@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.thelounge-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.thelounge-http.entrypoints: web
-  traefik.http.routers.thelounge-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.thelounge-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.thelounge-https.entrypoints: websecure
   traefik.http.routers.thelounge-https.tls: true
@@ -32,8 +28,14 @@ services:
     image: lscr.io/linuxserver/thelounge:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - PUID=1000 
-      - PGID=1000
+      TZ: ${TZ:-Europe/Amsterdam}
+      PUID: "1000"
+      PGID: "1000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/config
     networks:

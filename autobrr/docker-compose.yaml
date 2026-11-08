@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.autobrr-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.autobrr-http.entrypoints: web
-  traefik.http.routers.autobrr-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.autobrr-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.autobrr-https.entrypoints: websecure
   traefik.http.routers.autobrr-https.tls: true
@@ -31,7 +27,7 @@ services:
     restart: unless-stopped
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
-      TZ: ${TZ}
+      TZ: ${TZ:-Europe/Amsterdam}
       AUTOBRR__HOST: 0.0.0.0
       AUTOBRR__PORT: ${APP_PORT}
       AUTOBRR__SESSION_SECRET: ${SESSION_SECRET}
@@ -43,7 +39,6 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
     networks:
       - frontend

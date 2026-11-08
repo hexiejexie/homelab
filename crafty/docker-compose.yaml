@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.crafty-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.crafty-http.entrypoints: web
-  traefik.http.routers.crafty-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.crafty-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.crafty-https.entrypoints: websecure
   traefik.http.routers.crafty-https.tls: true
@@ -11,6 +7,7 @@ x-traefik-labels: &traefik-template
   traefik.http.routers.crafty-https.service: ${APP_NAME}
   traefik.http.services.crafty.loadbalancer.server.port: ${APP_PORT}
   traefik.http.services.crafty.loadbalancer.server.scheme: https
+  traefik.http.services.crafty.loadbalancer.serverstransport: insecure@file
 
 x-homepage-labels: &homepage-template
   homepage.group: ${HOMEPAGE_GROUP}
@@ -31,10 +28,15 @@ services:
     image: registry.gitlab.com/crafty-controller/crafty-4:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      TZ: Etc/UTC
+      TZ: ${TZ:-Europe/Amsterdam}
       USE_HTTPS: "false"
     ports:
       - 25565-25568:25565-25568
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import ssl,urllib.request as u; u.urlopen('https://localhost:${APP_PORT}/', context=ssl._create_unverified_context(), timeout=5)"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./backups:/crafty/backups
       - ./logs:/crafty/logs

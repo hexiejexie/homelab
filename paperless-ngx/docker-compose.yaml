@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.paperless-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.paperless-http.entrypoints: web
-  traefik.http.routers.paperless-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.paperless-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.paperless-https.entrypoints: websecure
   traefik.http.routers.paperless-https.tls: true
@@ -33,11 +29,14 @@ services:
       paperless-redis:
         condition: service_healthy
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PAPERLESS_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:?set PAPERLESS_SECRET_KEY in .env}
       PAPERLESS_REDIS: redis://paperless-redis:6379
       PAPERLESS_DBENGINE: sqlite
-      PAPERLESS_OCR_LANGUAGE: eng
-      PAPERLESS_TIME_ZONE: Europe/Amsterdam
+      PAPERLESS_OCR_LANGUAGE: eng+ron
+      PAPERLESS_OCR_LANGUAGES: ron
+      PAPERLESS_TIME_ZONE: ${TZ:-Europe/Amsterdam}
       PAPERLESS_ADMIN_USER: ${ADMIN_USER}
       PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PAPERLESS_EMAIL_HOST: ${SMTP_HOST}
@@ -61,6 +60,8 @@ services:
     container_name: paperless-redis
     image: redis:7-alpine
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 30s

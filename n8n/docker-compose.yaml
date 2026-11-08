@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.n8n-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.n8n-http.entrypoints: web
-  traefik.http.routers.n8n-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.n8n-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.n8n-https.entrypoints: websecure
   traefik.http.routers.n8n-https.tls: true
@@ -30,19 +26,20 @@ services:
     image: n8nio/n8n:${IMAGE_TAG:-latest}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${APP_PORT}/healthz || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
     environment:
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
-      - N8N_HOST=${APP_NAME}.${BASE_DOMAIN}
-      - N8N_EDITOR_BASE_URL=https://${APP_NAME}.${BASE_DOMAIN}
-      - N8N_PROTOCOL=https 
-      - NODE_ENV=production
-      - WEBHOOK_URL=https://${APP_NAME}.${BASE_DOMAIN}/
+      TZ: ${TZ:-Europe/Amsterdam}
+      GENERIC_TIMEZONE: ${TZ:-Europe/Amsterdam}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+      N8N_HOST: ${APP_NAME}.${BASE_DOMAIN}
+      N8N_EDITOR_BASE_URL: https://${APP_NAME}.${BASE_DOMAIN}
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      WEBHOOK_URL: https://${APP_NAME}.${BASE_DOMAIN}/
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./n8n-data:/home/node/.n8n
       - ./files:/files
     networks:

@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.homeassistant-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.homeassistant-http.entrypoints: web
-  traefik.http.routers.homeassistant-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.homeassistant-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.homeassistant-https.entrypoints: websecure
   traefik.http.routers.homeassistant-https.tls: true
@@ -29,13 +25,14 @@ services:
     container_name: ${APP_NAME}
     image: ghcr.io/home-assistant/home-assistant:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     healthcheck:
       test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - ./config:/config
     networks:
       - frontend

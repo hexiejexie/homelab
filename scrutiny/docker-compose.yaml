@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.scrutiny-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.scrutiny-http.entrypoints: web
-  traefik.http.routers.scrutiny-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.scrutiny-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.scrutiny-https.entrypoints: websecure
   traefik.http.routers.scrutiny-https.tls: true
@@ -27,14 +23,13 @@ x-kuma-labels: &kuma-template
 services:
   scrutiny:
     container_name: ${APP_NAME}
-    image: ghcr.io/analogj/scrutiny:${IMAGE_TAG:-master-omnibus}
+    image: ghcr.io/analogj/scrutiny:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    cap_add:
-      - SYS_RAWIO
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       COLLECTOR_CRON_SCHEDULE: "0 23 * * *"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/api/health || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 3
@@ -42,8 +37,6 @@ services:
     volumes:
       - ./config:/opt/scrutiny/config
       - ./influxdb:/opt/scrutiny/influxdb
-      - /run/udev:/run/udev:ro
-      - /etc/smart_drivedb.h:/etc/smart_drivedb.h:ro
     networks:
       - frontend
     labels:

@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.adguard-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.adguard-http.entrypoints: web
-  traefik.http.routers.adguard-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.adguard-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.adguard-https.entrypoints: websecure
   traefik.http.routers.adguard-https.tls: true
@@ -27,15 +23,23 @@ x-kuma-labels: &kuma-template
 services:
   adguard:
     container_name: ${APP_NAME}
-    image: adguard/adguardhome:${IMAGE_TAG:-v0.107.56}
+    image: adguard/adguardhome:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${APP_PORT}/login.html || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./config:/opt/adguardhome/conf
       - ./workdir:/opt/adguardhome/work
     ports:
+      - ${LAN_IP:?set LAN_IP in .env}:53:53/tcp
       - 53:53/udp
       - 853:853/tcp
-      - 784:784/udp
+      - 853:853/udp
     networks:
       - frontend
       - backend

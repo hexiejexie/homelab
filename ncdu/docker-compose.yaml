@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.ncdu-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.ncdu-http.entrypoints: web
-  traefik.http.routers.ncdu-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.ncdu-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.ncdu-https.entrypoints: websecure
   traefik.http.routers.ncdu-https.tls: true
@@ -31,10 +27,16 @@ services:
     restart: unless-stopped
     privileged: true
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       NCDU_PATH: /w
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /:/w:ro
-      - /etc/localtime:/etc/localtime:ro
     networks:
       - frontend
     labels:

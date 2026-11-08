@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.uptime-kuma-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.uptime-kuma-http.entrypoints: web
-  traefik.http.routers.uptime-kuma-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.uptime-kuma-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.uptime-kuma-https.entrypoints: websecure
   traefik.http.routers.uptime-kuma-https.tls: true
@@ -27,8 +23,10 @@ x-kuma-labels: &kuma-template
 services:
   uptime-kuma:
     container_name: ${APP_NAME}
-    image: louislam/uptime-kuma:${IMAGE_TAG:-1}
+    image: louislam/uptime-kuma:${IMAGE_TAG:-2}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
     volumes:
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -41,7 +39,8 @@ services:
     image: ghcr.io/bigboot/autokuma:${AUTOKUMA_TAG:-latest}
     restart: unless-stopped
     environment:
-      AUTOKUMA__KUMA__URL: http://uptime-kuma:3001
+      TZ: ${TZ:-Europe/Amsterdam}
+      AUTOKUMA__KUMA__URL: http://${APP_NAME}:${APP_PORT}
       AUTOKUMA__KUMA__USERNAME: ${KUMA_USERNAME}
       AUTOKUMA__KUMA__PASSWORD: ${KUMA_PASSWORD}
       AUTOKUMA__TAG_NAME: auto

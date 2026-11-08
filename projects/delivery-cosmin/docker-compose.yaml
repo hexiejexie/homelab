@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.delivery-cosmin-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`) || Host(`delivery.hexie.dev`)
-  traefik.http.routers.delivery-cosmin-http.entrypoints: web
-  traefik.http.routers.delivery-cosmin-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.delivery-cosmin-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`) || Host(`delivery.hexie.dev`)
   traefik.http.routers.delivery-cosmin-https.entrypoints: websecure
   traefik.http.routers.delivery-cosmin-https.tls: true
@@ -23,9 +19,18 @@ services:
     container_name: ${APP_NAME}
     image: hexiejexie/delivery-app:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+    # webapp.py hardcodes app.run(debug=True); flask run skips that and keeps the debugger off
+    command: ["python", "-m", "flask", "--app", "webapp", "run", "--host", "0.0.0.0", "--port", "${APP_PORT}"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import ssl,urllib.request as u; u.urlopen('http://localhost:${APP_PORT}/', context=ssl._create_unverified_context(), timeout=5)"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./romania:/app/romania
-      - ./doc_number.txt:/app/doc_number.txt
+      - ./order_counter.txt:/app/order_counter.txt
     networks:
       - frontend
     labels:

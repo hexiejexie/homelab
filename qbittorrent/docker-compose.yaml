@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.qbittorrent-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.qbittorrent-http.entrypoints: web
-  traefik.http.routers.qbittorrent-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.qbittorrent-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.qbittorrent-https.entrypoints: websecure
   traefik.http.routers.qbittorrent-https.tls: true
@@ -35,10 +31,17 @@ services:
     image: lscr.io/linuxserver/qbittorrent:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       PUID: "0"
       PGID: "0"
     ports:
-      - 63531:63531
+      - 63531:63531/tcp
+      - 63531:63531/udp
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:${APP_PORT}/ || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
     volumes:
       - ./qbittorrent:/config
       - /18tb/media:/data

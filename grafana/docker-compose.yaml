@@ -1,9 +1,5 @@
 x-traefik-labels: &traefik-template
   traefik.enable: true
-  traefik.http.routers.grafana-http.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
-  traefik.http.routers.grafana-http.entrypoints: web
-  traefik.http.routers.grafana-http.middlewares: redirect-to-https
-  traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
   traefik.http.routers.grafana-https.rule: Host(`${APP_NAME}.${BASE_DOMAIN}`)
   traefik.http.routers.grafana-https.entrypoints: websecure
   traefik.http.routers.grafana-https.tls: true
@@ -29,10 +25,11 @@ x-kuma-labels: &kuma-template
 services:
   grafana:
     container_name: ${APP_NAME}
-    image: grafana/grafana-enterprise:${IMAGE_TAG:-11.6.0}
+    image: grafana/grafana-enterprise:${IMAGE_TAG:-latest}
     restart: unless-stopped
     user: "0:0"
     environment:
+      TZ: ${TZ:-Europe/Amsterdam}
       GF_SERVER_ROOT_URL: https://${APP_NAME}.${BASE_DOMAIN}/
       GF_PLUGINS_PREINSTALL: grafana-clock-panel
       GF_SMTP_ENABLED: "true"
